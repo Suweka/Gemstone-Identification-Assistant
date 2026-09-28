@@ -1,0 +1,11 @@
+# Intermediate files from building the report and manual
+gem_expert/docs/src/build/
+
+# Word lock files and OS clutter
+~$*
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Editor settings
+.vscode/
