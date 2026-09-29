@@ -979,18 +979,35 @@ rules_page(_Request) :-
          ]).
 
 facts_table -->
-    { findall(tr([ td(b(L)), td(R), td(S), td(OP), td(H) ]),
+    { findall(tr([ td(class(kbpic), div(class(pic), Pic)),
+                   td([b(L), div(class(swatches), Dots)]),
+                   td(R), td(S), td(OP), td(H) ]),
               ( ( gem(G) ; imitation_material(G) ), label(G, L),
+                picture_or_unknown(G, Pic), colour_dots(G, Dots),
                 ri_range(G, R1, R2), format(atom(R), '~3f - ~3f', [R1, R2]),
                 sg_range(G, S1, S2), format(atom(S), '~2f - ~2f', [S1, S2]),
                 optic(G, O), label(O, OP), hardness(G, H) ),
               Rows) },
     html(div(class(block),
              [ h3('Gem property facts'),
+               p(class(muted), 'Each drawing shows the gem in a typical colour; the dots show every colour the species occurs in (colour/2 facts).'),
                div(class('table-wrap'),
                  table(class(kb),
-                   [ tr([th('Material'), th('Refractive index'), th('Specific gravity'), th('Optic character'), th('Hardness')]) | Rows ]))
+                   [ tr([th(''), th('Material and colours'), th('Refractive index'), th('Specific gravity'), th('Optic character'), th('Hardness')]) | Rows ]))
              ])).
+
+% small colour dots for every colour a material occurs in
+colour_dots(G, Dots) :-
+    colour_order(Order),
+    findall(span([class(dot), style(St), title(L)], ''),
+            ( member(C, Order), colour(G, C), swatch_style(C, St), label(C, L) ),
+            Dots0),
+    (   Dots0 \== [] -> Dots = Dots0
+    ;   imitation_colours(G, Text) -> Dots = [span(class(dotnote), Text)]
+    ;   Dots = [] ).
+
+imitation_colours(glass,          'Made in any colour').
+imitation_colours(cubic_zirconia, 'Usually colourless; also dyed colours').
 
 rule_layers -->
     { findall(layer(T, D, Rows),
@@ -1872,6 +1889,13 @@ legend .num{margin:0;width:28px;height:28px;font-size:.9rem}
 table.kb{border-collapse:collapse;width:100%;font-size:.86rem}
 table.kb th{background:#1f1b54;color:#fff;text-align:left;padding:8px}
 table.kb td{border-bottom:1px solid var(--line);padding:8px;vertical-align:top}
+table.kb td.kbpic{width:64px;padding:6px 8px}
+table.kb .pic{width:52px;height:52px;border-radius:10px;background:radial-gradient(circle at 50% 40%,#3a3f66,#15172c);display:flex;align-items:center;justify-content:center}
+table.kb .pic .gem-svg{width:40px;height:40px}
+table.kb td{vertical-align:middle}
+.swatches{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.swatches .dot{display:inline-block;width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.2)}
+.dotnote{font-size:.78rem;color:var(--muted)}
 table.kb code{font:.8rem Consolas,monospace;color:#3730a3;white-space:normal}
 table.kb td.src{color:var(--muted);font-size:.78rem;min-width:160px}
 
