@@ -23,6 +23,24 @@ $frag = @{
     '{{console}}'   = HtmlEscape ([IO.File]::ReadAllText((Join-Path $Data 'console_consult.txt')).Trim())
 }
 
+# The user manual, converted into Appendix D of the report: sections become
+# D.1, D.2 ..., figures D1, D2 ..., tables D1, D2 ..., so they do not clash
+# with the report's own numbering.
+$man  = [IO.File]::ReadAllText((Join-Path $src 'manual.html'))
+$body = $man.Substring($man.IndexOf('<h1>1. About the system</h1>'))
+$body = $body.Substring(0, $body.IndexOf('</body>'))
+$body = $body.Replace('<br clear="all" style="page-break-before:always">', '')
+$body = $body.Replace('<h1>Appendix A. Gem property facts for testing</h1>', '<h1>19. Gem property facts for testing</h1>')
+$body = $body.Replace('Table A1.', 'Table 8.').Replace('in <b>Appendix A</b>', 'in <b>Section 19</b>').Replace('(full references are in the project report)', '(full references are in the References section of this report)')
+$body = [regex]::Replace($body, '<h2>(\d+)\.(\d+) ', '<h3>D.$1.$2 ')
+$body = [regex]::Replace($body, '(<h3>D\.\d+\.\d+ [^<]*)</h2>', '$1</h3>')
+$body = [regex]::Replace($body, '<h1>(\d+)\. ([^<]*)</h1>', '<h2>D.$1 $2</h2>')
+$body = [regex]::Replace($body, '\bFigure (\d+)', 'Figure D$1')
+$body = [regex]::Replace($body, '\bTable (\d+)', 'Table D$1')
+$body = [regex]::Replace($body, '\bSections? (\d+)(\.\d+)?', { param($m) $m.Value -replace '(\d+(\.\d+)?)$', 'D.$1' })
+$body = [regex]::Replace($body, '\((Section|Sections) D\.', '($1 D.')
+$frag['{{manual_appendix}}'] = $body
+
 $word = New-Object -ComObject Word.Application
 $word.Visible = $true      # hidden Word hangs on save after the TOC is inserted
 $word.DisplayAlerts = 0
@@ -30,6 +48,7 @@ try {
     foreach ($pair in @(@('report.html', 'Gemstone_Identification_Assistant_Report'),
                         @('manual.html', 'Gemstone_Identification_Assistant_User_Manual'))) {
         $html = [IO.File]::ReadAllText((Join-Path $src $pair[0]))
+        $html = $html.Replace('{{manual_appendix}}', $frag['{{manual_appendix}}'])   # first: it contains other placeholders
         foreach ($k in $frag.Keys) { $html = $html.Replace($k, $frag[$k]) }
         $html = $html.Replace('{{IMG}}', $imgUrl)          # last: fragments contain it too
         # give every picture an explicit height so Word keeps its aspect ratio (max 820 px tall)
@@ -112,6 +131,13 @@ try {
         }
 
         $final = Join-Path $docs ($pair[1] + '.docx')
+        # page number of the user manual on the title page (a PAGEREF field)
+        $r2 = $doc.Content
+        if ($r2.Find.Execute('[[MANPAGE]]') -and $doc.Bookmarks.Exists('user-manual')) {
+            [void]$doc.Fields.Add($r2, -1, 'PAGEREF user-manual \h', $false)
+            $doc.Fields.Update() | Out-Null
+            if ($doc.TablesOfContents.Count -gt 0) { $doc.TablesOfContents.Item(1).Update() }
+        }
         $docx = Join-Path $env:TEMP ($pair[1] + '.docx')
         $pdf  = Join-Path $env:TEMP ($pair[1] + '.pdf')
         Step "toc done"
