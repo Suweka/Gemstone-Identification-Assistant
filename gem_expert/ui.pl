@@ -56,7 +56,8 @@ home_page(Request) :-
            \glossary,
            \good_to_know,
            div([id(toast), class(toast)], ''),
-           \page_script
+           \page_script,
+           \live_check_script
          ]).
 
 hero -->
@@ -173,7 +174,7 @@ identify_form(Vals) -->
         [ h2(class(center), 'Describe your stone'),
           p(class('center sub'),
             'Every field is optional. The more you fill in, the more confident the answer.'),
-          form([class('gem-form'), action('/identify'), method(get)],
+          form([class('gem-form live-form'), action('/identify'), method(get)],
             [ fieldset(
                 [ legend([span(class(num), '1'), 'Instrument readings']),
                   div(class('field-grid'),
@@ -984,14 +985,15 @@ question_page(Goal, Inputs, Unknowns, K, Stack) :-
                  [ div(class(qmeta), [ span(class(stage), QN),
                                        span(class(rule), ['testing rule ', CurRule]) ]),
                    h2(QT),
-                   form([action('/consult'), method(get)], FormContent),
+                   form([class('live-form'), action('/consult'), method(get)], FormContent),
                    details([class(whybox), open(open)],
                            [ summary('Why are you asking this?'),
                              ol(class(whylist), WhyItems) ])
                  ]),
                \answers_so_far(Inputs, Unknowns),
                p(class('form-foot'), a(href(Restart), 'Start the consultation again'))
-             ])
+             ]),
+           \live_check_script
          ]).
 
 hidden_state(Goal, Inputs, Unknowns, Hidden) :-
@@ -1242,7 +1244,9 @@ page_script -->
 '    var otl=document.getElementById("ri_otl");',
 '    if(otl){otl.checked=(d.ri==="over_limit"); if(otl.checked){d.ri="";}}',
 '    ["ri","sg","optic","colour","phenomenon","inclusion","target"].forEach(function(k){',
-'      var el=document.querySelector("[name="+k+"]"); if(el){el.value=d[k]||"";}});',
+'      var el=document.querySelector("[name="+k+"]");',
+'      if(el){el.value=d[k]||""; el.dispatchEvent(new Event("input"));}});',
+'    if(otl){otl.dispatchEvent(new Event("change"));}',
 '    var f=document.querySelector("#identify");',
 '    f.scrollIntoView({behavior:"smooth"});',
 '    var form=document.querySelector(".gem-form");',
@@ -1254,6 +1258,60 @@ page_script -->
 '  });',
 '});'
     ])).
+
+/* Live input checks: as the user types an RI or SG reading, say which gems
+   it fits, warn about unusual values and block impossible ones. The ranges
+   come from the knowledge base (ri_range/3, sg_range/3, tolerance/2). */
+live_check_script -->
+    { ranges_json(Json) },
+    html([ script([type('application/json'), id('gem-ranges')], \[Json]),
+           script(\[
+'(function(){',
+'var R=JSON.parse(document.getElementById("gem-ranges").textContent);',
+'var BOUNDS={ri:[1.3,3.0],sg:[1.0,8.0]}, NAME={ri:"RI",sg:"SG"};',
+'function fits(k,n){var t=R.tol[k],out=[];for(var g in R[k]){var r=R[k][g];',
+'  if(n>=r[0]-t&&n<=r[1]+t)out.push(g);}return out;}',
+'function lo(k){var m=99;for(var g in R[k])m=Math.min(m,R[k][g][0]);return m;}',
+'function hi(k){var m=0;for(var g in R[k])m=Math.max(m,R[k][g][1]);return m;}',
+'function msgFor(el){var m=el.parentNode.querySelector(".live");',
+'  if(!m){m=document.createElement("p");m.className="live";m.setAttribute("aria-live","polite");',
+'    el.insertAdjacentElement("afterend",m);}return m;}',
+'function show(el,cls,txt,err){var m=msgFor(el);m.className="live "+cls;m.textContent=txt;',
+'  el.setCustomValidity(err?txt:"");el.classList.toggle("bad-input",!!err);}',
+'function check(el,k){var v=el.value.trim();',
+'  if(v===""){var m=el.parentNode.querySelector(".live");if(m)m.textContent="";',
+'    el.setCustomValidity("");el.classList.remove("bad-input");return;}',
+'  var n=Number(v),b=BOUNDS[k];',
+'  if(isNaN(n))return show(el,"err","Please type a number, e.g. "+(k==="ri"?"1.765":"4.00")+".",true);',
+'  if(n<b[0]||n>b[1])return show(el,"err",NAME[k]+" must be between "+b[0].toFixed(1)+" and "+b[1].toFixed(1)+".",true);',
+'  var f=fits(k,n);',
+'  if(k==="ri"&&n>R.limit)return show(el,"warn","Most refractometers cannot read above "+R.limit+". If you saw no shadow edge, tick \\"Over the limit\\" instead."+(f.length?" Fits: "+f.join(", ")+".":""));',
+'  if(n<lo(k)||n>hi(k))return show(el,"warn","Unusual reading: no gem in the knowledge base has an "+NAME[k]+" of "+n+". Please check it.");',
+'  if(!f.length)return show(el,"warn","No gem in the knowledge base has this "+NAME[k]+". Check the reading, or it may be another material.");',
+'  show(el,"ok","Fits: "+f.join(", ")+".");}',
+'document.querySelectorAll(".live-form").forEach(function(form){',
+'  ["ri","sg"].forEach(function(k){var el=form.querySelector("input[name="+k+"]");',
+'    if(!el)return; el.addEventListener("input",function(){check(el,k);}); check(el,k);});',
+'  var otl=form.querySelector("#ri_otl"), ri=form.querySelector("input[name=ri]");',
+'  if(otl&&ri){var sync=function(){ri.disabled=otl.checked;',
+'      if(otl.checked){ri.value="";var over=[];for(var g in R.ri)if(R.ri[g][1]>R.limit)over.push(g);',
+'        show(ri,"ok","Over the limit: fits "+over.join(", ")+".");}',
+'      else{check(ri,"ri");}};',
+'    otl.addEventListener("change",sync); sync();}',
+'});',
+'})();'
+           ]) ]).
+
+% the RI and SG ranges of every material, as JSON for the browser
+ranges_json(Json) :-
+    findall(P, ( ( gem(G) ; imitation_material(G) ), ri_range(G, A, B), label(G, L),
+                 format(atom(P), '"~w":[~w,~w]', [L, A, B]) ), RIs),
+    findall(P, ( ( gem(G) ; imitation_material(G) ), sg_range(G, A, B), label(G, L),
+                 format(atom(P), '"~w":[~w,~w]', [L, A, B]) ), SGs),
+    atomic_list_concat(RIs, ',', RA), atomic_list_concat(SGs, ',', SA),
+    tolerance(ri, TR), tolerance(sg, TS), refractometer_limit(Lim),
+    format(atom(Json), '{"ri":{~w},"sg":{~w},"tol":{"ri":~w,"sg":~w},"limit":~w}',
+           [RA, SA, TR, TS, Lim]).
 
 css('
 :root{--ink:#1b1f3a;--muted:#5d6480;--line:#e3e6ef;--bg:#f5f6fb;--card:#fff;
@@ -1349,7 +1407,16 @@ legend .num{margin:0;width:28px;height:28px;font-size:.9rem}
 .field input,.field select,.verify-row select{width:100%;padding:10px 12px;border:1.5px solid #cfd4e2;border-radius:8px;font:1rem Inter,"Segoe UI",sans-serif;background:#fff}
 .field input:focus,.field select:focus,.verify-row select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(67,56,202,.15)}
 .field .where{margin:8px 0 0;font-size:.8rem;color:var(--muted)}
-.otl{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.88rem;cursor:pointer}
+.field .otl{display:flex;align-items:center;gap:8px;margin:8px 0 0;font-size:.88rem;font-weight:500;cursor:pointer}
+.live{margin:6px 0 0;font-size:.84rem;line-height:1.35;min-height:0}
+.live:empty{display:none}
+.live.ok{color:var(--good)}
+.live.warn{color:var(--warn)}
+.live.err{color:var(--bad);font-weight:600}
+.live.ok::before{content:"\\2713  "}
+.live.warn::before,.live.err::before{content:"\\26A0  "}
+.field input.bad-input{border-color:var(--bad);box-shadow:0 0 0 3px rgba(185,28,28,.12)}
+.field input:disabled{background:#eef0f4;color:#9aa0b3}
 .field .otl input{width:18px;height:18px;padding:0;margin:0;accent-color:var(--primary);flex:none}
 .actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;border-top:1px solid var(--line);padding-top:24px}
 .action-card{border-radius:12px;padding:18px;background:#f4f3ff}
