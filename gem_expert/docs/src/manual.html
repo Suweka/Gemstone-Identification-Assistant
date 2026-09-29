@@ -13,7 +13,7 @@ table.data td,table.data th,table.datasm td,table.datasm th,table.gemt td,table.
 table.gemt td,table.gemt th{vertical-align:middle;font-size:9pt}
 table.data th,table.datasm th,table.gemt th{font-weight:bold}
 .code,kbd{font-family:"Courier New",Courier,monospace;font-size:10pt;}
-pre{font-family:"Courier New",Courier,monospace;font-size:9.5pt;line-height:115%;background:#fff;border:1px solid #000;padding:6px;margin-bottom:6pt;white-space:pre-wrap;text-align:left}
+pre{font-family:"Courier New",Courier,monospace;font-size:8.5pt;line-height:115%;background:#fff;border:1px solid #000;padding:6px;margin-bottom:6pt;white-space:pre-wrap;text-align:left}
 .caption{font-style:italic;font-size:10pt;text-align:center;margin-bottom:10pt}
 .tcaption{font-style:italic;font-size:10pt;margin-top:8pt;margin-bottom:3pt;text-align:left}
 .fig{text-align:center;margin-bottom:2pt}
@@ -22,7 +22,11 @@ pre{font-family:"Courier New",Courier,monospace;font-size:9.5pt;line-height:115%
 .ref{text-align:left}
 .title{text-align:center;}
 .small{font-size:9pt;}
-.eq{text-align:center;font-family:"Cambria Math","Times New Roman",serif;font-size:12pt;margin:6pt 0}</style></head>
+.eq{text-align:center;font-family:"Cambria Math","Times New Roman",serif;font-size:12pt;margin:6pt 0}pre{page-break-inside:avoid}
+pre.long{page-break-inside:auto}
+.fig,.tcaption,h1,h2,h3{page-break-after:avoid}
+tr{page-break-inside:avoid}
+</style></head>
 <body>
 
 <p class="title" style="margin-top:110pt;font-size:26pt;font-weight:bold;">Gemstone Identification Assistant</p>

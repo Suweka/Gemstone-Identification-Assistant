@@ -78,6 +78,20 @@ try {
             $doc.Styles.Item($st).Font.Name = 'Times New Roman'
             $doc.Styles.Item($st).Font.Color = -16777216
         }
+        # keep each code block on one page: every code line stays with the next
+        # (Word ignores this for blocks longer than a page, e.g. the appendices)
+        try {
+            $pre = $doc.Styles.Item('HTML Preformatted')
+            $pre.ParagraphFormat.KeepWithNext = -1
+            $pre.ParagraphFormat.KeepTogether = -1
+        } catch { }
+        # table header rows repeat on each page and never sit alone at a page end
+        foreach ($t in @($doc.Tables)) {
+            try {
+                $t.Rows.Item(1).HeadingFormat = -1
+                $t.Rows.Item(1).Range.ParagraphFormat.KeepWithNext = -1
+            } catch { }
+        }
         # hyperlinks black too
         $doc.Styles.Item(-86).Font.Color = -16777216
 

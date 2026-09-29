@@ -13,7 +13,7 @@ table.data td,table.data th,table.datasm td,table.datasm th,table.gemt td,table.
 table.gemt td,table.gemt th{vertical-align:middle;font-size:9pt}
 table.data th,table.datasm th,table.gemt th{font-weight:bold}
 .code,kbd{font-family:"Courier New",Courier,monospace;font-size:10pt;}
-pre{font-family:"Courier New",Courier,monospace;font-size:9.5pt;line-height:115%;background:#fff;border:1px solid #000;padding:6px;margin-bottom:6pt;white-space:pre-wrap;text-align:left}
+pre{font-family:"Courier New",Courier,monospace;font-size:8.5pt;line-height:115%;background:#fff;border:1px solid #000;padding:6px;margin-bottom:6pt;white-space:pre-wrap;text-align:left}
 .caption{font-style:italic;font-size:10pt;text-align:center;margin-bottom:10pt}
 .tcaption{font-style:italic;font-size:10pt;margin-top:8pt;margin-bottom:3pt;text-align:left}
 .fig{text-align:center;margin-bottom:2pt}
@@ -22,7 +22,11 @@ pre{font-family:"Courier New",Courier,monospace;font-size:9.5pt;line-height:115%
 .ref{text-align:left}
 .title{text-align:center;}
 .small{font-size:9pt;}
-.eq{text-align:center;font-family:"Cambria Math","Times New Roman",serif;font-size:12pt;margin:6pt 0}</style></head>
+.eq{text-align:center;font-family:"Cambria Math","Times New Roman",serif;font-size:12pt;margin:6pt 0}pre{page-break-inside:avoid}
+pre.long{page-break-inside:auto}
+.fig,.tcaption,h1,h2,h3{page-break-after:avoid}
+tr{page-break-inside:avoid}
+</style></head>
 <body>
 
 <p class="title" style="margin-top:70pt;font-size:13pt;font-weight:bold;">University of Moratuwa</p>
@@ -199,16 +203,15 @@ pre{font-family:"Courier New",Courier,monospace;font-size:9.5pt;line-height:115%
 <p>The rules are grouped into four layers (Figure 2). Layer 1 identifies the species from the three core measurements, detects imitations, and, when measurements are missing, produces ranked candidates. Layer 2 names the variety. Layer 3 judges origin and treatment from inclusions. Layer 4 turns conclusions into advice. Because each layer uses the conclusions of the one above as conditions, a single identification typically chains three or four rules.</p>
 <p class="fig"><img src="{{IMG}}/fig_layers.png" width="580"></p>
 <p class="caption">Figure 2. Rule layers and how conclusions chain between them</p>
-<p>The following excerpt shows representative rules from each layer:</p>
-<pre>% Layer 1: species
-rule(r1,  [optic(uniaxial), ri_in(corundum), sg_in(corundum)], species(corundum)).
-% Layer 2: variety
-rule(r24, [species(corundum), observed_colour(blue), not(phenomenon(star))],
-          variety(blue_sapphire)).
-% Layer 3: origin
-rule(r46, [species(corundum), inclusion(silk)], origin(likely_natural)).
-% Layer 4: recommendation
-rule(r61, [origin(likely_natural)], advice(get_certificate)).</pre>
+<p><b>How to read a rule.</b> Every rule has the form <span class="code">rule(Id, [Condition1, Condition2, ...], Conclusion)</span>. The list in square brackets holds the IF part, and all its conditions must be true (they are joined by AND). The last argument is the THEN part: the new fact the rule adds. <span class="code">not(C)</span> means "C has not been established" (negation as failure). Conditions such as <span class="code">ri_in(corundum)</span> are tests that compare the user's reading with the stored range, so rule r1 below reads: <i>IF the stone is uniaxial AND its RI is in the corundum range AND its SG is in the corundum range, THEN it is corundum.</i> Table 5 shows one rule from each layer with its meaning; all 62 rules are listed in Appendix A, with a key to the condition terms.</p>
+<p class="tcaption">Table 5. Representative rules from each layer, with their meaning</p>
+<table class="data">
+<tr><th style="width:13%">Layer</th><th style="width:47%">Rule in the knowledge base</th><th>Meaning in plain English</th></tr>
+<tr><td>1. Species</td><td class="code">rule(r1, [optic(uniaxial), ri_in(corundum), sg_in(corundum)], species(corundum)).</td><td>IF the stone is uniaxial AND its RI is in the corundum range AND its SG is in the corundum range, THEN the species is corundum.</td></tr>
+<tr><td>2. Variety</td><td class="code">rule(r24, [species(corundum), observed_colour(blue), not(phenomenon(star))], variety(blue_sapphire)).</td><td>IF the stone is corundum AND it is blue AND it does not show a star, THEN it is a blue sapphire.</td></tr>
+<tr><td>3. Origin</td><td class="code">rule(r46, [species(corundum), inclusion(silk)], origin(likely_natural)).</td><td>IF the stone is corundum AND it contains rutile silk, THEN it is likely natural.</td></tr>
+<tr><td>4. Advice</td><td class="code">rule(r61, [origin(likely_natural)], advice(get_certificate)).</td><td>IF the stone is likely natural, THEN advise the buyer to obtain a laboratory certificate.</td></tr>
+</table>
 <p>Alternative representations were considered. A <b>decision tree</b> would force a fixed order of questions and could not use whatever subset of data the user has. <b>Frames</b> would describe each gem well but do not naturally express the heuristic IF-THEN knowledge about inclusions and origin. Production rules express both kinds of knowledge, support both chaining directions and give natural explanations, so they were chosen.</p>
 
 <h2>2.5 Representing uncertainty: certainty factors</h2>
@@ -216,8 +219,8 @@ rule(r61, [origin(likely_natural)], advice(get_certificate)).</pre>
 <p class="eq">CF(conclusion) = CF(rule) &#215; min( CF(condition<sub>1</sub>), ..., CF(condition<sub>n</sub>) )</p>
 <p>User inputs have CF 1.0. A reading inside a gem's published range has CF 1.0, while a reading that fits only because of the measurement tolerance has CF 0.7. When a second rule supports a fact that is already believed, the two certainties are combined:</p>
 <p class="eq">CF<sub>combined</sub> = CF<sub>1</sub> + CF<sub>2</sub> &#215; (1 - CF<sub>1</sub>)</p>
-<p>Table 5 summarises the values chosen for each rule group; individual values are listed in Appendix A.</p>
-<p class="tcaption">Table 5. Certainty factor ranges by rule group</p>
+<p>Table 6 summarises the values chosen for each rule group; individual values are listed in Appendix A.</p>
+<p class="tcaption">Table 6. Certainty factor ranges by rule group</p>
 {{t_cf}}
 <p>The values encode the knowledge engineer's judgement of how conclusive each piece of evidence is. Species rules are high (0.90-0.95) because three independent measurements agree, but not 1.0 because ranges can overlap. Colour-based varieties are lower where the colour boundary is subjective (padparadscha 0.70). Origin rules range from 0.95 for curved striae, which the literature treats as diagnostic of flame-fusion synthesis [1], down to 0.60 for fingerprints, which can also occur in flux-grown synthetics [4]. The partial-match evidence rules are deliberately weak (0.15-0.50) so that incomplete data never produces a falsely confident answer.</p>
 <p class="note">[Be ready to justify these values in the viva; adjust them if your own reading of the sources suggests different weights.]</p>
@@ -229,7 +232,7 @@ rule(r61, [origin(likely_natural)], advice(get_certificate)).</pre>
 <p>The system follows the classic expert system architecture (Figure 3). The knowledge base (knowledge_base.pl) contains only domain knowledge and no reasoning code. The inference engine (engine.pl) contains only domain-independent reasoning and explanation code. Adding a new gem therefore means adding facts and rules; no engine code changes. Working memory is declared <span class="code">thread_local</span>, so each web request, which runs in its own thread, has a private copy and several users cannot interfere with each other.</p>
 <p class="fig"><img src="{{IMG}}/fig_arch.png" width="600"></p>
 <p class="caption">Figure 3. System architecture</p>
-<p class="tcaption">Table 6. Source files</p>
+<p class="tcaption">Table 7. Source files</p>
 <table class="data">
 <tr><th style="width:22%">File</th><th>Responsibility</th></tr>
 <tr><td class="code">knowledge_base.pl</td><td>Facts, 62 production rules, certainty factors, justifications and sources.</td></tr>
@@ -252,21 +255,32 @@ rule(r61, [origin(likely_natural)], advice(get_certificate)).</pre>
     ).
 
 select_rule(Id, Conds, Concl) :-
-    rule(Id, Conds, Concl),               % candidate rule, in knowledge-base order
-    all_true(Conds),                      % every condition holds in working memory
-    ground(Concl),
-    \+ fired(Id, _, Concl).               % refractoriness</pre>
+    rule(Id, Conds, Concl),       % next rule, in knowledge-base order
+    all_true(Conds),              % all its conditions are true
+    ground(Concl),                % conclusion fully known
+    \+ fired(Id, _, Concl).       % not fired before (refractoriness)</pre>
 <p><b>Conflict resolution</b> is by rule order: in each cycle the first applicable rule in the knowledge base fires. Because the rules are ordered by layer, all species rules fire before variety rules, which fire before origin and advice rules. This ordering is what makes the negative conditions safe: for example, rule r11 (glass) requires <span class="code">not(species(_))</span>, and by the time it is considered every species rule has already had the chance to fire. <b>Refractoriness</b> prevents a rule from firing twice for the same conclusion; a different rule may still support an existing fact, in which case its certainty is combined into that fact. <span class="code">fire/3</span> asserts the conclusion, records the firing in <span class="code">fired/3</span> for the explanation facility, and stores the certainty calculation in <span class="code">fired_cf/6</span>.</p>
 <p>For the input RI 1.765, SG 4.00, uniaxial, blue, silk, the engine fires r1 (species corundum), r24 (blue sapphire), r46 (likely natural) and r61 (certificate advice), then stops because no further rule can add a new fact.</p>
 
 <h2>3.3 Backward chaining (Verify mode)</h2>
 <p>In Verify mode the user asks whether the stone is a particular gem, for example "is it a ruby?". The goal <span class="code">variety(ruby)</span> is proved by a <b>meta-interpreter</b>, a Prolog program that interprets the rule base and builds a proof tree as it goes [12], [14]:</p>
-<pre>prove(not(C), negated(C))    :- !, \+ prove(C, _).          % negation as failure
-prove(C, test(C))            :- test_condition(C), !, test(C).  % computed test
-prove(C, given(C))           :- input_fact(C), !, fact(C).      % user input
-prove(C, by(Id, C, Proofs))  :-                                 % use a rule
+<pre>% 1. negation as failure: not(C) holds if C cannot be proved
+prove(not(C), negated(C)) :- !, \+ prove(C, _).
+% 2. a computed test, e.g. ri_in(corundum)
+prove(C, test(C)) :- test_condition(C), !, test(C).
+% 3. a fact the user entered
+prove(C, given(C)) :- input_fact(C), !, fact(C).
+% 4. use a rule that concludes C and prove its conditions
+prove(C, by(Id, C, Proofs)) :-
     rule(Id, Conds, C),
     prove_all(Conds, Proofs).</pre>
+<p>Each clause handles one kind of goal, and the second argument records how it was proved:</p>
+<ul>
+<li><b>Clause 1:</b> a negated condition such as <span class="code">not(phenomenon(star))</span> is proved when the inner goal <i>cannot</i> be proved.</li>
+<li><b>Clause 2:</b> a test such as <span class="code">ri_in(corundum)</span> is proved by computation (comparing the reading with the stored range).</li>
+<li><b>Clause 3:</b> an input such as <span class="code">observed_colour(red)</span> is proved if the user entered it.</li>
+<li><b>Clause 4:</b> any other goal is proved by finding a rule that concludes it and proving all of that rule's conditions in turn (<span class="code">prove_all/2</span> calls <span class="code">prove/2</span> on each one).</li>
+</ul>
 <p>To prove a goal the engine selects a rule whose conclusion unifies with it and recursively proves its conditions as sub-goals, backtracking to the next rule if a condition fails. The proof tree <span class="code">by(r21, variety(ruby), [by(r1, species(corundum), [...]), given(observed_colour(red)), negated(phenomenon(star))])</span> is the basis of the How explanation and the backward-chaining diagram. When the goal fails, <span class="code">why_not/3</span> examines every rule that could have concluded it, finds the <b>first failed condition</b> of each, and, if that condition is itself a derived fact, explains recursively why that sub-goal failed.</p>
 
 <h2>3.4 Interactive consultation (Consult mode)</h2>
@@ -277,13 +291,13 @@ prove(C, by(Id, C, Proofs))  :-                                 % use a rule
     ;   unknown_key(K) -> true              % user said "don't know"
     ;   throw(ask(K, Stack))                % ask the user now
     ).</pre>
-<p>The interface asks the question and restarts the consultation with the new answer. Questions are therefore asked only when, and only if, a rule being tested needs them. When the goal is "find the species", backward chaining naturally performs <b>hypothesise-and-test</b>: it tries r1 (is it corundum?), asks for the optic character, and if the answer rules corundum out it abandons that hypothesis and moves on to r2 (is it spinel?) without asking anything about corundum again. The stack gives the answer to "Why are you asking this?" (Section 4.3).</p>
+<p>In words: if the property is already known, or the user has said "don't know", the proof simply continues; otherwise the proof is interrupted with a question. The interface asks the question and restarts the consultation with the new answer. Questions are therefore asked only when, and only if, a rule being tested needs them. When the goal is "find the species", backward chaining naturally performs <b>hypothesise-and-test</b>: it tries r1 (is it corundum?), asks for the optic character, and if the answer rules corundum out it abandons that hypothesis and moves on to r2 (is it spinel?) without asking anything about corundum again. The stack gives the answer to "Why are you asking this?" (Section 4.3).</p>
 
 <h2>3.5 Certainty factors and ranked candidates</h2>
 <p>When RI, SG or optic character is missing, no species rule can fire. Rule r14 then makes every gem that is <i>consistent</i> with all supplied properties a candidate with a low base certainty (0.20), and evidence rules r15-r19 add certainty for each supplied property that positively matches. For a red, singly refractive stone the calculation for spinel is:</p>
-<pre>r14  consistent with all inputs              CF = 0.20
-r15  optic character matches   (rule 0.30)   CF = 0.20 + 0.30 x (1 - 0.20) = 0.44
-r19  red is a typical colour   (rule 0.15)   CF = 0.44 + 0.15 x (1 - 0.44) = 0.524</pre>
+<pre>r14  fits all inputs  (rule 0.20)  CF = 0.20
+r15  optic matches    (rule 0.30)  CF = 0.20 + 0.30 x (1 - 0.20) = 0.44
+r19  typical colour   (rule 0.15)  CF = 0.44 + 0.15 x (1 - 0.44) = 0.524</pre>
 <p>Garnet receives the same evidence, so the system ranks "Spinel 52%, Garnet 52%". This tie is honest: these observations genuinely cannot separate the two, and the system advises measuring RI and SG. With uniaxial and blue it ranks corundum, zircon and beryl (52%) above tourmaline (44%), because blue is not a typical tourmaline colour. An evidence rule's own conclusion is excluded from its weakest-condition calculation, since a belief is not evidence for itself.</p>
 <p><b>Most useful next measurement.</b> A ranked list is only a partial answer, so the system also tells the user what to measure next. For each core measurement the user has not given (RI, SG, optic character), <span class="code">next_measurement/4</span> counts how many pairs of candidates it would tell apart. Two gems are told apart by optic character when their optic characters differ, and by RI or SG when their ranges overlap by less than half of the narrower range. The measurement that separates the most pairs is recommended, together with the range each candidate would show. For the red, singly refractive stone above, the SG ranges of spinel (3.55-3.70) and garnet (3.57-4.30) overlap heavily but their RI ranges hardly do, so the system recommends measuring the refractive index (Figure 4). This mirrors how a gemmologist chooses the test that best discriminates between the remaining hypotheses.</p>
 <p class="fig"><img src="{{IMG}}/ranked.png" width="470"></p>
@@ -292,7 +306,7 @@ r19  red is a typical colour   (rule 0.15)   CF = 0.44 + 0.15 x (1 - 0.44) = 0.5
 <h2>3.6 Natural-language interface</h2>
 <p>Users can type a question such as "Is my stone a sapphire if the RI is 1.765 and it is blue?". The question is tokenised and parsed by a Definite Clause Grammar [15] in query_parser.pl. The grammar recognises goal phrases ("is my stone a", "could it be"), property phrases ("RI is 1.765", "singly refractive", "curved growth lines") and gem names, and skips words it does not know, so word order is flexible:</p>
 <pre>items([I|Is])       --> item(I), !, items(Is).
-items([skip(W)|Is]) --> [W], !, items(Is).        % unknown word: skip it
+items([skip(W)|Is]) --> [W], !, items(Is).   % unknown word: skip it
 items([])           --> [].
 
 item(goal(T))  --> goal_phrase(T).
@@ -300,6 +314,7 @@ item(fact(F))  --> fact_phrase(F).
 
 goal_phrase(T) --> [is], stone_ref, article, target(T).
 fact_phrase(ri(N)) --> ri_word, link, number(N).</pre>
+<p>In DCG notation, <span class="code">A --&gt; B, C</span> means "an A is a B followed by a C", and words in square brackets such as <span class="code">[is]</span> must appear literally in the sentence. So <span class="code">items</span> reads the sentence one piece at a time: if the next words form a goal or a property phrase it keeps them, otherwise it skips one word and carries on. <span class="code">goal_phrase</span> matches, for example, "is" + "my stone" + "a" + gem name, and <span class="code">fact_phrase</span> matches "RI" + optional linking words ("is", "of", "about") + a number.</p>
 <p>The example question is parsed as the goal <span class="code">verify(blue_sapphire)</span> with facts <span class="code">[ri(1.765), observed_colour(blue)]</span> and answered by backward chaining. Gem names are matched longest first, so "star sapphire" is not mistaken for "sapphire".</p>
 
 <h2>3.7 User interface</h2>
@@ -325,7 +340,7 @@ fact_phrase(ri(N)) --> ri_word, link, number(N).</pre>
 <p class="caption">Figure 8. Readings checked as they are typed: an RI that fits spinel and glass, an impossible SG (top); "over the limit" ticked and an unusual SG (bottom)</p>
 
 <h2>3.8 Logic programming concepts used</h2>
-<p class="tcaption">Table 7. Where the system uses core Prolog concepts</p>
+<p class="tcaption">Table 8. Where the system uses core Prolog concepts</p>
 <table class="data">
 <tr><th style="width:24%">Concept</th><th>Where and how it is used</th></tr>
 <tr><td>Unification</td><td>Matching rule conclusions to goals in <span class="code">prove/2</span> (engine.pl, line 375); a rule with variables, e.g. r14 <span class="code">candidate(G)</span>, is instantiated once per matching gem.</td></tr>
@@ -399,8 +414,8 @@ CONCLUSION
 <p>Testing was carried out at three levels: (1) documented manual test cases that exercise each type of scenario through the complete system, (2) automated unit tests with SWI-Prolog's plunit library that are re-run after every change, and (3) interface testing of every web page, including invalid input, in a browser. The 15 example stones built into the home page double as a regression set: each was run through both forward and backward chaining and produced its expected result.</p>
 
 <h2>5.2 Manual test cases</h2>
-<p>Table 8 lists the test cases with their expected and actual results. The actual output and fired rules were produced by running the system on each input.</p>
-<p class="tcaption">Table 8. Manual test cases</p>
+<p>Table 9 lists the test cases with their expected and actual results. The actual output and fired rules were produced by running the system on each input.</p>
+<p class="tcaption">Table 9. Manual test cases</p>
 <table class="datasm">
 <tr><th>TC</th><th style="width:13%">Scenario</th><th style="width:19%">Input</th><th style="width:18%">Expected output</th><th style="width:25%">Actual output</th><th>Rules fired</th><th>Result</th></tr>
 <tr><td>1</td><td>Natural blue sapphire</td><td>RI 1.765, SG 4.00, uniaxial, blue, silk</td><td>Blue sapphire, likely natural, certificate advice</td><td>Blue sapphire (90%); origin: Likely natural</td><td>r1, r24, r46, r61</td><td>Pass</td></tr>
@@ -426,8 +441,8 @@ CONCLUSION
 </table>
 
 <h2>5.3 Automated tests</h2>
-<p>The plunit suite in tests.pl contains 47 tests in five units (Table 9). All 47 pass (Appendix B). The suite is run with <span class="code">run_tests.</span></p>
-<p class="tcaption">Table 9. Automated test suites</p>
+<p>The plunit suite in tests.pl contains 47 tests in five units (Table 10). All 47 pass (Appendix B). The suite is run with <span class="code">run_tests.</span></p>
+<p class="tcaption">Table 10. Automated test suites</p>
 <table class="data">
 <tr><th>Unit</th><th>Tests</th><th>What is checked</th></tr>
 <tr><td>identify_forward_chaining</td><td>18</td><td>Species, varieties, imitations, origin, treatment, partial data, ambiguity, no match, refractoriness, explanation generation.</td></tr>
@@ -438,8 +453,8 @@ CONCLUSION
 </table>
 
 <h2>5.4 Defects found and fixed</h2>
-<p>Testing found several real defects, which were fixed and, where possible, covered by a regression test (Table 10).</p>
-<p class="tcaption">Table 10. Defects found during testing</p>
+<p>Testing found several real defects, which were fixed and, where possible, covered by a regression test (Table 11).</p>
+<p class="tcaption">Table 11. Defects found during testing</p>
 <table class="data">
 <tr><th style="width:30%">Defect</th><th style="width:35%">Cause</th><th>Fix</th></tr>
 <tr><td>Evidence rules added almost no certainty (0.3 x 0.2 = 0.06)</td><td>An evidence rule's own conclusion (the candidate) was counted as its weakest condition.</td><td>Exclude the conclusion from its own weakest-condition calculation.</td></tr>
@@ -452,7 +467,7 @@ CONCLUSION
 </table>
 
 <h2>5.5 Evaluation against the objectives</h2>
-<p class="tcaption">Table 11. Evaluation against the objectives</p>
+<p class="tcaption">Table 12. Evaluation against the objectives</p>
 <table class="data">
 <tr><th style="width:32%">Objective</th><th style="width:12%">Status</th><th>Evidence</th></tr>
 <tr><td>O1 Knowledge acquisition documented</td><td>Met</td><td>Table 3; rule_info/3 stores the source of every rule; Appendix A.</td></tr>
@@ -532,15 +547,33 @@ CONCLUSION
 <!-- ================================================================== -->
 <br clear="all" style="page-break-before:always">
 <h1>Appendix A. Complete Rule Base</h1>
-<p>Generated from knowledge_base.pl. Source keys: gia [1], webster [2], read [3], matlins [4], igs [5], gemdat [6], ngja [7], design = knowledge engineer decision.</p>
+<p>Generated from knowledge_base.pl. Each row reads: IF all the conditions (joined by AND) are true, THEN the conclusion is added, with the certainty factor (CF) shown. Source keys: gia [1], webster [2], read [3], matlins [4], igs [5], gemdat [6], ngja [7], design = knowledge engineer decision. Capital letters such as <span class="code">G</span> are variables: they stand for any gem, so a rule like r14 applies to every gem that satisfies it. Table A1 explains the condition terms.</p>
+<p class="tcaption">Table A1. Key to the condition terms used in the rules</p>
+<table class="data">
+<tr><th style="width:32%">Term</th><th>Meaning</th></tr>
+<tr><td class="code">optic(T)</td><td>The stone's optic character is T (isotropic, uniaxial or biaxial). "Doubly refractive" fits uniaxial or biaxial.</td></tr>
+<tr><td class="code">ri_in(G), sg_in(G)</td><td>The RI (or SG) reading lies within gem G's range, allowing &#177;0.005 for RI and &#177;0.03 for SG. An RI "over the limit" fits gems whose range goes above about 1.81.</td></tr>
+<tr><td class="code">observed_colour(C), phenomenon(P), inclusion(I)</td><td>The user reported this colour, optical effect or inclusion.</td></tr>
+<tr><td class="code">species(G), variety(V), imitation(M)</td><td>Conclusions of earlier rules: the stone has been identified as species G, variety V or imitation material M.</td></tr>
+<tr><td class="code">origin(O), treatment(T), candidate(G)</td><td>Conclusions of earlier rules: likely origin, probable treatment, or a possible gem when data is incomplete.</td></tr>
+<tr><td class="code">not(C)</td><td>C has not been established (negation as failure).</td></tr>
+<tr><td class="code">missing(K)</td><td>The user did not supply property K (e.g. ri, sg, optic, inclusion).</td></tr>
+<tr><td class="code">partial_data</td><td>At least one of RI, SG or optic character is missing, and at least one property was supplied.</td></tr>
+<tr><td class="code">gem_type(G)</td><td>G is one of the ten gem species in the knowledge base.</td></tr>
+<tr><td class="code">optic_ok(G), ri_ok(G), sg_ok(G), colour_ok(G), phenomenon_ok(G)</td><td>The supplied optic character, RI, SG, colour or effect is consistent with gem G (true when that property was not supplied).</td></tr>
+<tr><td class="code">typical_colour_ok(G)</td><td>The reported colour is one of G's most common colours in the trade.</td></tr>
+<tr><td class="code">ambiguous_species</td><td>More than one species matched the measurements.</td></tr>
+<tr><td class="code">advice(K)</td><td>A recommendation is given; K names its wording (e.g. get_certificate).</td></tr>
+</table>
+<p class="tcaption">Table A2. Complete rule base</p>
 {{t_rules}}
 
 <br clear="all" style="page-break-before:always">
 <h1>Appendix B. Automated Test Output</h1>
-<pre>{{tests_out}}</pre>
+<pre class="long">{{tests_out}}</pre>
 
 <h1>Appendix C. Console Consultation Transcript</h1>
 <p>Consult mode, goal "find the species". The user types <i>why</i> at the first question, then answers isotropic, RI 1.718 and SG 3.60.</p>
-<pre>{{console}}</pre>
+<pre class="long">{{console}}</pre>
 
 </body></html>
