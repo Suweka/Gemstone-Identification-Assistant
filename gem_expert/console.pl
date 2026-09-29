@@ -113,19 +113,23 @@ ask_consult(K, Stack, Answer) :-
         )
     ).
 
-consult_question(ri, 'What is the refractive index (RI)?', number).
+consult_question(ri, 'What is the refractive index (RI)? (type OTL if the refractometer shows no reading)', number).
 consult_question(sg, 'What is the specific gravity (SG)?', number).
 consult_question(optic, 'What is the optic character?', [isotropic, uniaxial, biaxial, doubly_refractive]).
 consult_question(colour, 'What colour is the stone?', Cs) :- findall(C, colour(_, C), Cs0), sort(Cs0, Cs).
 consult_question(phenomenon, 'Does it show an optical effect?', [none|Ps]) :- findall(P, phenomenon(_, P), Ps0), sort(Ps0, Ps).
 consult_question(inclusion, 'What inclusions can you see with a loupe?', Is) :- findall(I, inclusion_type(I, _), Is).
 
+consult_answer(ri, number, S, ri(over_limit)) :- over_limit_answer(S), !.
 consult_answer(K, number, S, F) :- !,
     number_string(N, S), input_key(K, F), arg(1, F, N).
 consult_answer(K, Options, S, Answer) :-
     number_string(N, S), integer(N),
     (   N =:= 0 -> Answer = unknown
     ;   nth1(N, Options, V), input_key(K, F), arg(1, F, V), Answer = F ).
+
+% the user can type OTL when the refractometer shows no reading
+over_limit_answer(S) :- memberchk(S, ["otl", "over", "over the limit", "over limit"]).
 
 % Worked example used in the report
 demo :-
@@ -221,7 +225,7 @@ ask_yes(Prompt, Yes) :-
 /* ---- Asking questions ------------------------------------------- */
 ask_inputs(Inputs) :-
     nl, writeln('Enter what you know. Press Enter to skip (unknown).'),
-    ask_number('Refractive index (RI), e.g. 1.765', 1.3, 3.0, RI),
+    ask_number('Refractive index (RI), e.g. 1.765 (or OTL if over the limit)', 1.3, 3.0, RI),
     ask_number('Specific gravity (SG), e.g. 4.00', 1.0, 8.0, SG),
     writeln('Optic character (from a polariscope/refractometer):'),
     ask_option([isotropic, uniaxial, biaxial, doubly_refractive], Optic),
@@ -248,7 +252,10 @@ ask_number(Prompt, Min, Max, Value) :-
     read_line_to_string(user_input, S0),
     (   S0 == end_of_file -> Value = unknown
     ;   normalize_space(string(S), S0),
+        string_lower(S, SL),
         (   S == "" -> Value = unknown
+        ;   sub_atom(Prompt, 0, _, _, 'Refractive'), over_limit_answer(SL)
+        ->  Value = over_limit
         ;   catch(number_string(N, S), _, fail), N >= Min, N =< Max
         ->  Value = N
         ;   format("  Please enter a number between ~w and ~w, or press Enter.~n", [Min, Max]),

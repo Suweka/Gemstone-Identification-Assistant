@@ -43,6 +43,13 @@
 tolerance(ri, 0.005).
 tolerance(sg, 0.03).
 
+% highest RI a standard gem refractometer can read
+refractometer_limit(1.81).
+
+% how an RI value is shown to users
+ri_value_text(over_limit, "over the refractometer limit") :- !.
+ri_value_text(V, V).
+
 /* Facts that come from the user (never concluded by rules) */
 input_key(ri,         ri(_)).
 input_key(sg,         sg(_)).
@@ -107,8 +114,13 @@ all_true([C|Cs]) :- holds(C), all_true(Cs).
 test(not(C)) :- \+ holds(C).
 test(optic(T)) :-
     fact(optic(U)), optic_compatible(U, T).
+% RI "over the limit": the refractometer shows no reading, so the stone's RI
+% is above the instrument's limit; it fits any gem whose range goes above it
 test(ri_in(G)) :-
-    fact(ri(V)), ri_range(G, Min, Max), tolerance(ri, T),
+    fact(ri(over_limit)), !,
+    ri_range(G, _, Max), refractometer_limit(L), Max > L.
+test(ri_in(G)) :-
+    fact(ri(V)), number(V), ri_range(G, Min, Max), tolerance(ri, T),
     V >= Min - T, V =< Max + T.
 test(sg_in(G)) :-
     fact(sg(V)), sg_range(G, Min, Max), tolerance(sg, T),
@@ -204,6 +216,8 @@ cond_cf(_, 1.0).
 
 % 1.0 when the reading lies inside the published range, 0.7 when it
 % only fits thanks to the measurement tolerance
+range_cf(ri, _, 0.85) :-                 % only known to be above the limit
+    fact(ri(over_limit)), !.
 range_cf(ri, G, CF) :-
     fact(ri(V)), ri_range(G, Mi, Ma),
     ( V >= Mi, V =< Ma -> CF = 1.0 ; CF = 0.7 ).
@@ -509,7 +523,8 @@ input_lines(Inputs, Lines) :-
             ( member(K, [ri, sg, optic, colour, phenomenon, inclusion]),
               input_key(K, F),
               (   member(F, Inputs)
-              ->  arg(1, F, V), key_label(K, KL), format(string(S), "~w = ~w", [KL, V])
+              ->  arg(1, F, V0), ri_value_text(V0, V),
+                  key_label(K, KL), format(string(S), "~w = ~w", [KL, V])
               ;   key_label(K, KL), format(string(S), "~w = (not supplied)", [KL])
               ) ),
             Lines).
@@ -585,6 +600,9 @@ describe(optic(T), S) :- !,
     ;   fact(optic(U)),
         format(string(S), "optic character is ~w (compatible with ~w)", [U, T])
     ).
+describe(ri_in(G), S) :- fact(ri(over_limit)), !,
+    ri_range(G, Mi, Ma), refractometer_limit(L),
+    format(string(S), "RI is over the refractometer limit (~w); the ~w range ~3f-~3f goes above it", [L, G, Mi, Ma]).
 describe(ri_in(G), S) :- !,
     fact(ri(V)), ri_range(G, Mi, Ma), tolerance(ri, T),
     format(string(S), "RI ~w lies in the ~w range ~3f-~3f (+/-~w)", [V, G, Mi, Ma, T]).
@@ -626,8 +644,9 @@ describe_fail(optic(T), S) :- !,
     ).
 describe_fail(ri_in(G), S) :- !,
     ri_range(G, Mi, Ma),
-    (   fact(ri(V))
-    ->  format(string(S), "needs RI in the ~w range ~3f-~3f, but RI is ~w", [G, Mi, Ma, V])
+    (   fact(ri(V0))
+    ->  ri_value_text(V0, V),
+        format(string(S), "needs RI in the ~w range ~3f-~3f, but RI is ~w", [G, Mi, Ma, V])
     ;   format(string(S), "needs RI in the ~w range ~3f-~3f, but RI was not supplied", [G, Mi, Ma])
     ).
 describe_fail(sg_in(G), S) :- !,
@@ -800,6 +819,9 @@ friendly_reason(optic(T), S) :-
     (   U == T -> format(string(S), "Your stone is ~w", [UP])
     ;   optic_phrase(T, TP), format(string(S), "Your stone is ~w, which fits ~w", [UP, TP]) ).
 friendly_reason(ri_in(G), S) :-
+    fact(ri(over_limit)), !, ri_range(G, Mi, Ma), label(G, L), refractometer_limit(Lim),
+    format(string(S), "Its refractive index is over the refractometer limit (above about ~w), which fits the ~w range of ~3f-~3f", [Lim, L, Mi, Ma]).
+friendly_reason(ri_in(G), S) :-
     fact(ri(V)), ri_range(G, Mi, Ma), label(G, L),
     format(string(S), "Its refractive index (~w) is within the ~w range of ~3f-~3f", [V, L, Mi, Ma]).
 friendly_reason(sg_in(G), S) :-
@@ -937,8 +959,9 @@ friendly_fail(optic(T), S) :- !,
     ;   format(string(S), "It must be ~w, but the optic character was not given", [TP]) ).
 friendly_fail(ri_in(G), S) :- !,
     ri_range(G, Mi, Ma), label(G, L),
-    (   fact(ri(V))
-    ->  format(string(S), "Its refractive index must be ~3f-~3f (~w), but yours is ~w", [Mi, Ma, L, V])
+    (   fact(ri(V0))
+    ->  ri_value_text(V0, V),
+        format(string(S), "Its refractive index must be ~3f-~3f (~w), but yours is ~w", [Mi, Ma, L, V])
     ;   format(string(S), "Its refractive index must be ~3f-~3f (~w), but no RI was given", [Mi, Ma, L]) ).
 friendly_fail(sg_in(G), S) :- !,
     sg_range(G, Mi, Ma), label(G, L),

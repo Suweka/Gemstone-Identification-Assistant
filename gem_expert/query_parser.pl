@@ -115,6 +115,8 @@ target_words([cymophane], cats_eye_chrysoberyl).
 target_words([padparadscha, sapphire], padparadscha).
 
 % ---- property phrases ----
+fact_phrase(ri(over_limit)) --> ri_word, link, over_limit_words.
+fact_phrase(ri(over_limit)) --> over_limit_words, [on, the, refractometer].
 fact_phrase(ri(N)) --> ri_word, link, number(N).
 fact_phrase(sg(N)) --> sg_word, link, number(N).
 fact_phrase(optic(O)) --> optic_words(O).
@@ -127,6 +129,16 @@ ri_word --> [refractive, index].
 ri_word --> [ri].
 ri_word --> [r, i].
 ri_word --> [refraction].
+
+ri_word --> [refractometer, reading].
+ri_word --> [refractometer].
+
+% the refractometer shows no reading: RI above the instrument's limit
+over_limit_words --> [over, the, limit].
+over_limit_words --> [above, the, limit].
+over_limit_words --> [over, limit].
+over_limit_words --> [otl].
+over_limit_words --> [no, reading].
 
 sg_word --> [specific, gravity, sg].
 sg_word --> [specific, gravity].

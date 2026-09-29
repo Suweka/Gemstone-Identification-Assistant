@@ -31,6 +31,7 @@ margin(24).
 /* ==================================================================
    Short labels for nodes
    ================================================================== */
+short_label(ri(over_limit), "RI over the limit") :- !.
 short_label(ri(V), S)              :- !, format(string(S), "RI = ~w", [V]).
 short_label(sg(V), S)              :- !, format(string(S), "SG = ~w", [V]).
 short_label(optic(T), S)           :- !, label(T, L), format(string(S), "Optic: ~w", [L]).

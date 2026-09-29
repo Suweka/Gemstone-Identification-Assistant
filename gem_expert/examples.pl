@@ -46,6 +46,9 @@ example(amethyst, 'Amethyst',
 example(aquamarine, 'Aquamarine',
         [ri-'1.577', sg-'2.70', optic-uniaxial, colour-blue, inclusion-crystals],
         'Aquamarine (beryl), likely natural', aquamarine).
+example(blue_zircon_otl, 'Blue zircon',
+        [ri-over_limit, sg-'4.70', optic-uniaxial, colour-blue, inclusion-crystals],
+        'Blue zircon, likely natural (RI over the refractometer limit)', blue_zircon).
 example(glass_imitation, 'Blue glass imitation',
         [ri-'1.520', optic-isotropic, colour-blue, inclusion-gas_bubbles],
         'Imitation: glass', glass).
@@ -83,6 +86,7 @@ gem_visual(amethyst,             faceted('#c79cff', '#51208f')).
 gem_visual(citrine,              faceted('#ffd76a', '#c26f00')).
 gem_visual(aquamarine,           faceted('#c8f1ff', '#4a9fc2')).
 gem_visual(blue_zircon,          faceted('#b5fbff', '#1b9fb0')).
+gem_visual(blue_zircon_otl,      faceted('#b5fbff', '#1b9fb0')).
 gem_visual(glass_imitation,      bubbles('#8fb0ff', '#1d3c9c')).
 gem_visual(glass,                bubbles('#8fb0ff', '#1d3c9c')).
 gem_visual(cubic_zirconia,       faceted('#ffffff', '#9aa7bd')).

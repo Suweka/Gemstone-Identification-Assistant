@@ -201,6 +201,21 @@ test(tc30_proof_certainty) :-
     verify([ri(1.765), sg(4.00), optic(uniaxial), observed_colour(red)], ruby, proved(_, Proof)),
     proof_cf(Proof, CF), percent(CF, 90).
 
+test(tc43_ri_over_the_limit_zircon) :-
+    identify([ri(over_limit), sg(4.70), optic(uniaxial), observed_colour(blue)]),
+    fact(species(zircon)),
+    fact(variety(blue_zircon)),
+    \+ fact(species(corundum)).
+
+test(tc44_ri_over_the_limit_rules_out_low_ri_gems) :-
+    % a stone over the limit cannot be corundum (max RI 1.780)
+    verify([ri(over_limit), sg(4.00), optic(uniaxial), observed_colour(blue)], blue_sapphire, R),
+    R = failed(_, _).
+
+test(tc45_parse_over_the_limit) :-
+    parse_query("blue stone, RI over the limit, SG 4.70, uniaxial", identify, F, _),
+    memberchk(ri(over_limit), F).
+
 test(tc42_certainty_words) :-
     cf_word(90, "very likely"), cf_word(63, "likely"), cf_word(52, "possible"),
     cf_word(25, "weak evidence"), cf_word(5, "very weak evidence").

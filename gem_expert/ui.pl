@@ -222,9 +222,19 @@ phenomenon_options([ none-'No special effect',
 % field(+Key, +Value): the input control for one property, with help text.
 % Shared by the form and the step-by-step consultation questions.
 field(ri, V) -->
-    number_field(ri, 'Refractive index (RI)', V, '1.3', '3.0', 'e.g. 1.765',
-                 'How strongly the stone bends light. Each gem has its own range.',
-                 'Read it from a gem refractometer (use the highest reading).').
+    { (   V == over_limit
+      ->  Num = '', Box = [type(checkbox), id(ri_otl), name(ri_otl), value(1), checked(checked)]
+      ;   Num = V,  Box = [type(checkbox), id(ri_otl), name(ri_otl), value(1)] ),
+      refractometer_limit(Lim),
+      format(atom(OtlHelp), 'Tick this if the refractometer shows no shadow edge: the RI is above its limit (about ~w), as with zircon and cubic zirconia.', [Lim]) },
+    html(div(class(field),
+             [ label(for(ri), 'Refractive index (RI)'),
+               p(class(what), 'How strongly the stone bends light. Each gem has its own range.'),
+               input([type(number), step(any), id(ri), name(ri), value(Num),
+                      min('1.3'), max('3.0'), placeholder('e.g. 1.765')]),
+               label([class(otl), title(OtlHelp)],
+                     [ input(Box), span('Over the limit (no reading)') ]),
+               p(class(where), [span(class(tag), 'How'), 'Read it from a gem refractometer (use the highest reading).']) ])).
 field(sg, V) -->
     number_field(sg, 'Specific gravity (SG)', V, '1.0', '8.0', 'e.g. 4.00',
                  'How heavy the stone is compared with the same volume of water.',
@@ -330,6 +340,7 @@ spec_label(inclusion, 'Inclusion').
 
 spec_value(inclusion, V, L) :- inclusion_type(V, L0), !, sub_atom_before_paren(L0, L).
 spec_value(phenomenon, V, L) :- phenomenon_options(Os), memberchk(V-L, Os), !.
+spec_value(ri, over_limit, 'Over the limit') :- !.
 spec_value(ri, V, V) :- !.
 spec_value(sg, V, V) :- !.
 spec_value(_, V, L) :- label(V, L).
@@ -541,6 +552,7 @@ chip_key(colour, 'Colour').
 chip_key(phenomenon, 'Effect').
 chip_key(inclusion, 'Inclusions').
 
+chip_value(ri, over_limit, 'over the limit') :- !.
 chip_value(ri, V, V) :- !.
 chip_value(sg, V, V) :- !.
 chip_value(K, V, L) :- spec_value(K, V, L).
@@ -848,6 +860,7 @@ ask_page(Request) :-
         )
     ).
 
+valid_fact(ri(over_limit)) :- !.
 valid_fact(ri(V)) :- !, V >= 1.3, V =< 3.0.
 valid_fact(sg(V)) :- !, V >= 1.0, V =< 8.0.
 valid_fact(_).
@@ -1074,10 +1087,11 @@ error_page(Errors) :-
    ================================================================== */
 form_values(Request, Vals) :-
     catch(http_parameters(Request,
-            [ ri(RI, [default('')]), sg(SG, [default('')]), optic(O, [default('')]),
-              colour(C, [default('')]), phenomenon(P, [default('')]),
+            [ ri(RI0, [default('')]), ri_otl(Otl, [default('')]), sg(SG, [default('')]),
+              optic(O, [default('')]), colour(C, [default('')]), phenomenon(P, [default('')]),
               inclusion(I, [default('')]), target(T, [default('')]) ]),
           _, fail), !,
+    ( Otl \== '' -> RI = over_limit ; RI = RI0 ),
     Vals = [ri=RI, sg=SG, optic=O, colour=C, phenomenon=P, inclusion=I, target=T].
 form_values(_, []).
 
@@ -1085,7 +1099,8 @@ val(K, Vals, V) :- ( memberchk(K=V0, Vals) -> V = V0 ; V = '' ).
 
 read_inputs(Request, Inputs, Target, Errors) :-
     http_parameters(Request,
-        [ ri(RI,          [default('')]),
+        [ ri(RI0,         [default('')]),
+          ri_otl(Otl,     [default('')]),   % "over the limit" checkbox
           sg(SG,          [default('')]),
           optic(Optic,    [default('')]),
           colour(Col,     [default('')]),
@@ -1097,6 +1112,7 @@ read_inputs(Request, Inputs, Target, Errors) :-
     findall(P, phenomenon(_, P), Ps),
     findall(I, inclusion_type(I, _), Is),
     verify_targets(Ts),
+    ( Otl \== '' -> RI = over_limit ; RI = RI0 ),
     Checks = [ num(ri, 'Refractive index (RI)', RI, 1.3, 3.0),
                num(sg, 'Specific gravity (SG)', SG, 1.0, 8.0),
                sel(optic, Optic, [isotropic, uniaxial, biaxial, doubly_refractive]),
@@ -1112,6 +1128,7 @@ read_inputs(Request, Inputs, Target, Errors) :-
     ).
 
 check_input(num(_, _, '', _, _), Acc, Acc) :- !.
+check_input(num(ri, _, over_limit, _, _), Fs-Es, [ri(over_limit)|Fs]-Es) :- !.
 check_input(num(Name, Label, A, Min, Max), Fs-Es, Fs1-Es1) :-
     (   catch(atom_number(A, N), _, fail), number(N), N >= Min, N =< Max
     ->  F =.. [Name, N], Fs1 = [F|Fs], Es1 = Es
@@ -1222,6 +1239,8 @@ page_script -->
 'document.querySelectorAll("[data-example]").forEach(function(b){',
 '  b.addEventListener("click",function(){',
 '    var d=JSON.parse(b.getAttribute("data-example"));',
+'    var otl=document.getElementById("ri_otl");',
+'    if(otl){otl.checked=(d.ri==="over_limit"); if(otl.checked){d.ri="";}}',
 '    ["ri","sg","optic","colour","phenomenon","inclusion","target"].forEach(function(k){',
 '      var el=document.querySelector("[name="+k+"]"); if(el){el.value=d[k]||"";}});',
 '    var f=document.querySelector("#identify");',
@@ -1330,6 +1349,8 @@ legend .num{margin:0;width:28px;height:28px;font-size:.9rem}
 .field input,.field select,.verify-row select{width:100%;padding:10px 12px;border:1.5px solid #cfd4e2;border-radius:8px;font:1rem Inter,"Segoe UI",sans-serif;background:#fff}
 .field input:focus,.field select:focus,.verify-row select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(67,56,202,.15)}
 .field .where{margin:8px 0 0;font-size:.8rem;color:var(--muted)}
+.otl{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.88rem;cursor:pointer}
+.field .otl input{width:18px;height:18px;padding:0;margin:0;accent-color:var(--primary);flex:none}
 .actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;border-top:1px solid var(--line);padding-top:24px}
 .action-card{border-radius:12px;padding:18px;background:#f4f3ff}
 .action-card:last-child{background:#effaf8}
