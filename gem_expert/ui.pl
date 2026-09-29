@@ -1055,7 +1055,8 @@ consult_page(Request) :-
         [ goal(Goal0,     [default('')]),
           unknown(Unk0,   [default('')]),
           skip(Skip,      [default('')]),
-          asked(Asked,    [default('')]) ]),
+          asked(Asked,    [default('')]),
+          order(Ord0,     [default('')]) ]),   % properties in the order they were answered
     (   Errors \== []
     ->  error_page(Errors)
     ;   consult_goal_ok(Goal0, Goal)
@@ -1066,14 +1067,43 @@ consult_page(Request) :-
         ->  Unk3 = [Asked|Unk2] ; Unk3 = Unk2 ),
         sort(Unk3, Unknowns),
         exclude(unknown_input(Unknowns), Inputs0, Inputs),
+        parse_unknowns(Ord0, Ord1),
+        (   input_key(Asked, _), \+ memberchk(Asked, Ord1)
+        ->  append(Ord1, [Asked], Ord2) ; Ord2 = Ord1 ),
+        include(answered(Inputs, Unknowns), Ord2, Order),
         consult(Goal, Inputs, Unknowns, Outcome),
         (   Outcome = ask(K, Stack)
-        ->  question_page(Goal, Inputs, Unknowns, K, Stack)
+        ->  question_page(Goal, Inputs, Unknowns, Order, K, Stack)
         ;   Outcome = done(Result),
-            consult_result_page(Goal, Inputs, Unknowns, Result)
+            consult_result_page(Goal, Inputs, Unknowns, Order, Result)
         )
     ;   consult_start_page
     ).
+
+% a property counts as answered if it has a value or was marked "don't know"
+answered(Inputs, Unknowns, K) :-
+    (   memberchk(K, Unknowns) -> true
+    ;   input_key(K, F), memberchk(F, Inputs) ).
+
+% back_href: the consultation as it was before the last answer
+back_href(_, _, _, [], '') :- !.
+back_href(Goal, Inputs, Unknowns, Order, Href) :-
+    append(Prev, [Last], Order),
+    exclude(unknown_input([Last]), Inputs, Inputs1),
+    exclude(==(Last), Unknowns, Unknowns1),
+    consult_href(Goal, Inputs1, Unknowns1, Prev, Href).
+
+% progress through the (at most six) questions
+consult_progress(Inputs, Unknowns, N, Html) :-
+    length(Inputs, NI), length(Unknowns, NU), Done is NI + NU,
+    N is Done + 1, Pct is round(100 * Done / 6),
+    format(atom(W), 'width:~w%', [Pct]),
+    format(atom(T), 'Question ~w of at most 6', [N]),
+    Html = div(class(progress),
+               [ span(class(ptext), T),
+                 span([class(pbar), role(progressbar), 'aria-valuemin'(0), 'aria-valuemax'(6),
+                       'aria-valuenow'(Done), 'aria-label'('Questions answered')],
+                      span([class(pfill), style(W)], '')) ]).
 
 consult_goal_ok(any_species, any_species) :- !.
 consult_goal_ok(G, G) :- G \== '', verify_targets(Ts), memberchk(G, Ts).
@@ -1095,30 +1125,36 @@ question_text(colour,     'What colour is your stone?').
 question_text(phenomenon, 'Does your stone show a special optical effect?').
 question_text(inclusion,  'What inclusions can you see with a 10x loupe?').
 
-question_page(Goal, Inputs, Unknowns, K, Stack) :-
+question_page(Goal, Inputs, Unknowns, Order, K, Stack) :-
     consult_goal_question(Goal, GQ),
     question_text(K, QT),
     why_asking(K, Stack, WhyLines),
     findall(li(L), member(L, WhyLines), WhyItems),
-    length(Inputs, NI), length(Unknowns, NU), N is NI + NU + 1,
+    consult_progress(Inputs, Unknowns, N, Progress),
     format(atom(QN), 'Question ~w', [N]),
     Stack = [frame(CurRule, _)|_],
-    hidden_state(Goal, Inputs, Unknowns, Hidden),
+    hidden_state(Goal, Inputs, Unknowns, Order, Hidden),
+    back_href(Goal, Inputs, Unknowns, Order, BackHref),
+    (   BackHref == '' -> Back = []
+    ;   Back = [a([class('btn btn-ghost back-q'), href(BackHref),
+                   title('Go back and change your previous answer')],
+                  [\['&#8592;'], ' Back'])] ),
     append(Hidden,
            [ input([type(hidden), name(asked), value(K)]),
              \field(K, ''),
              div(class(qbtns),
                  [ button([type(submit), class('btn btn-primary')], 'Answer'),
                    button([type(submit), class('btn btn-secondary'), name(skip), value(K)],
-                          'I don''t know') ]) ],
+                          'I don''t know') | Back ]) ],
            FormContent),
-    consult_href(Goal, [], [], Restart),
+    consult_href(Goal, [], [], [], Restart),
     page('Consultation',
          [ \page_head('Consult mode', 'interactive backward chaining', GQ,
                       'The system tests one hypothesis at a time and asks only for the facts the current rule needs.'),
            div(class('wrap narrow'),
              [ div(class('block question'),
-                 [ div(class(qmeta), [ span(class(stage), QN),
+                 [ Progress,
+                   div(class(qmeta), [ span(class(stage), QN),
                                        span(class(rule), ['testing rule ', CurRule]) ]),
                    h2(QT),
                    form([class('live-form'), action('/consult'), method(get)], FormContent),
@@ -1132,18 +1168,21 @@ question_page(Goal, Inputs, Unknowns, K, Stack) :-
            \live_check_script
          ]).
 
-hidden_state(Goal, Inputs, Unknowns, Hidden) :-
+hidden_state(Goal, Inputs, Unknowns, Order, Hidden) :-
     findall(input([type(hidden), name(Kp), value(V)]),
             ( member(F, Inputs), param_of(F, Kp, V) ),
             Hs),
     atomic_list_concat(Unknowns, ',', UA),
+    atomic_list_concat(Order, ',', OA),
     Hidden = [ input([type(hidden), name(goal), value(Goal)]),
-               input([type(hidden), name(unknown), value(UA)]) | Hs ].
+               input([type(hidden), name(unknown), value(UA)]),
+               input([type(hidden), name(order), value(OA)]) | Hs ].
 
-consult_href(Goal, Inputs, Unknowns, Href) :-
+consult_href(Goal, Inputs, Unknowns, Order, Href) :-
     findall(K=V, ( member(F, Inputs), param_of(F, K, V) ), Ps0),
     atomic_list_concat(Unknowns, ',', UA),
-    append([goal=Goal, unknown=UA], Ps0, Ps),
+    atomic_list_concat(Order, ',', OA),
+    append([goal=Goal, unknown=UA, order=OA], Ps0, Ps),
     uri_query_components(Q, Ps),
     format(atom(Href), '/consult?~w', [Q]).
 
@@ -1158,7 +1197,7 @@ answers_so_far(Inputs, Unknowns) -->
       append(C1, C2, Chips) },
     html(div(class(block), [ h3('Your answers so far'), div(class(chips), Chips) ])).
 
-consult_result_page(Goal, Inputs, Unknowns, Result) :-
+consult_result_page(Goal, Inputs, Unknowns, Order, Result) :-
     consult_goal_question(Goal, GQ),
     (   Result = proved(species(S), _), Goal == any_species -> label(S, TL)
     ;   label(Goal, TL) ),
@@ -1170,7 +1209,15 @@ consult_result_page(Goal, Inputs, Unknowns, Result) :-
            'Backward chaining asked only ~w of the 6 possible questions: it requested a fact only when the rule it was testing needed it.',
            [NQ]),
     identify_link(Inputs, IdHref),
-    consult_href(Goal, [], [], Restart),
+    consult_href(Goal, [], [], [], Restart),
+    back_href(Goal, Inputs, Unknowns, Order, BackHref),
+    (   BackHref == '' -> Back = []
+    ;   Back = [a([class('btn btn-secondary'), href(BackHref)], [\['&#8592;'], ' Change my last answer'])] ),
+    append([ [a([class('btn btn-primary'), href(Restart)], 'Start again')],
+             Back,
+             [ \print_button,
+               a([class('btn btn-secondary'), href(IdHref)], 'Run full identification'),
+               a([class('btn btn-ghost'), href('/')], 'Home') ] ], Actions),
     page('Consultation result',
          [ \page_head('Consult mode', 'interactive backward chaining', GQ,
                       'The consultation is finished. Here is the answer and how it was reached.'),
@@ -1182,10 +1229,7 @@ consult_result_page(Goal, Inputs, Unknowns, Result) :-
                Detail,
                \technical_block(Tech),
                div(class('result-actions'),
-                   [ a([class('btn btn-primary'), href(Restart)], 'Start again'),
-                     \print_button,
-                     a([class('btn btn-secondary'), href(IdHref)], 'Run full identification'),
-                     a([class('btn btn-ghost'), href('/')], 'Home') ])
+                   Actions)
              ]),
            \print_support,
            \diagram_script
@@ -1741,7 +1785,12 @@ legend .num{margin:0;width:28px;height:28px;font-size:.9rem}
 .question h2{font-size:1.35rem;margin:6px 0 14px}
 .qmeta{display:flex;gap:8px;align-items:center}
 .question .field{background:#fff;margin-bottom:14px}
-.qbtns{display:flex;gap:10px;flex-wrap:wrap}
+.qbtns{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.back-q{margin-left:auto}
+.progress{display:flex;align-items:center;gap:12px;margin:0 0 14px}
+.ptext{font-size:.84rem;font-weight:600;color:var(--muted);white-space:nowrap}
+.pbar{flex:1;height:8px;border-radius:4px;background:#e2e5ee;overflow:hidden;position:relative}
+.pfill{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:linear-gradient(90deg,#4338ca,#7c3aed);transition:width .3s}
 .whybox{margin-top:18px;background:#f4f3ff;border-radius:12px;padding:12px 16px}
 .whybox summary{cursor:pointer;font-weight:700;color:var(--primary)}
 .whylist{margin:10px 0 0;padding-left:20px}
