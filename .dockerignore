@@ -1,0 +1,5 @@
+# not needed to run the web server
+.git
+gem_expert/docs
+gem_expert/rules_table.csv
+*.md

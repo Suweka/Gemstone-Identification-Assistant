@@ -42,6 +42,14 @@ server(Port) :-
 stop_server(Port) :-
     http_stop_server(Port, []).
 
+% serve: start the web server for hosting and keep running.
+% Cloud hosts (Render, Railway, Fly.io) pass the port in the PORT
+% environment variable; 8080 is used when it is not set.
+serve :-
+    (   getenv('PORT', P), atom_number(P, Port) -> true ; Port = 8080 ),
+    server(Port),
+    thread_get_message(_).          % wait forever; the server runs in its own threads
+
 /* ==================================================================
    HOME PAGE
    ================================================================== */

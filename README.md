@@ -37,6 +37,20 @@ Other commands at the `?-` prompt:
 | `run_tests.` | Run the 41 automated tests |
 | `stop_server(8080).` | Stop the web server |
 
+## Hosting online (no Prolog needed for visitors)
+
+The repository includes a `Dockerfile` based on the official SWI-Prolog image, so the system can run on any Docker host. Visitors only need a web browser.
+
+**Render (free tier):**
+1. Sign in at [render.com](https://render.com) with your GitHub account.
+2. **New → Web Service**, then choose this repository.
+3. Render detects the `Dockerfile`. Set **Instance type** to **Free** and click **Create Web Service**.
+4. After the build finishes (a few minutes), the site is live at `https://<your-service-name>.onrender.com`.
+
+Every push to `main` redeploys automatically. On the free tier the service sleeps after about 15 minutes without visitors, and the next visit takes a short while to wake it up.
+
+To run the same container locally: `docker build -t gem-expert .` then `docker run -p 8080:8080 gem-expert`.
+
 ## Project structure
 
 | Path | Contents |
