@@ -714,8 +714,38 @@ trace_lines([line(I, Text)|T]) -->
 result_actions(EditHref) -->
     html(div(class('result-actions'),
              [ a([class('btn btn-primary'), href(EditHref)], 'Edit my inputs'),
+               \print_button,
                a([class('btn btn-secondary'), href('/#identify')], 'Start a new stone'),
-               a([class('btn btn-ghost'), href('/#examples')], 'Try an example') ])).
+               a([class('btn btn-ghost'), href('/#examples')], 'Try an example') ])),
+    print_support.
+
+/* ---- Print / Save as PDF ------------------------------------------ */
+print_button -->
+    html(button([type(button), class('btn btn-secondary'), onclick('window.print()'),
+                 title('Print this result, or choose "Save as PDF" as the printer')],
+                [\['&#128438;'], ' Print / Save as PDF'])).
+
+% a header that only appears on paper, and a script that opens every
+% collapsed section and shows the whole diagram before printing
+print_support -->
+    html([ div(class('print-only print-head'),
+               [ p([b('Gemstone Identification Assistant'), ' - result printed on ',
+                    span(id('print-date'), '')]),
+                 p(class(small), 'A first opinion from a rule-based expert system. It does not replace a certificate from the NGJA or an accredited gem laboratory.') ]),
+           script(\[
+'(function(){var h=document.querySelector(".print-head"),c=document.querySelector(".content");',
+'  if(h&&c){c.insertBefore(h,c.firstChild);}',
+'  var d=document.getElementById("print-date"); if(d){d.textContent=new Date().toLocaleString();}})();',
+'window.addEventListener("beforeprint",function(){',
+'  var d=document.getElementById("print-date");',
+'  if(d){d.textContent=new Date().toLocaleString();}',
+'  document.querySelectorAll("details").forEach(function(x){x.dataset.wasOpen=x.open?"1":"";x.open=true;});',
+'  document.querySelectorAll(".diagram .d-all").forEach(function(b){b.click();});',
+'});',
+'window.addEventListener("afterprint",function(){',
+'  document.querySelectorAll("details").forEach(function(x){x.open=(x.dataset.wasOpen==="1");});',
+'});'
+           ]) ]).
 
 /* ==================================================================
    VERIFY RESULT (backward chaining)
@@ -1143,9 +1173,11 @@ consult_result_page(Goal, Inputs, Unknowns, Result) :-
                \technical_block(Tech),
                div(class('result-actions'),
                    [ a([class('btn btn-primary'), href(Restart)], 'Start again'),
+                     \print_button,
                      a([class('btn btn-secondary'), href(IdHref)], 'Run full identification'),
                      a([class('btn btn-ghost'), href('/')], 'Home') ])
              ]),
+           \print_support,
            \diagram_script
          ]).
 
@@ -1731,6 +1763,27 @@ table.kb td.src{color:var(--muted);font-size:.78rem;min-width:160px}
 .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,120px);background:#1b1f3a;color:#fff;padding:12px 20px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.3);transition:transform .3s;z-index:50;max-width:90vw}
 .toast.show{transform:translate(-50%,0)}
 
+.print-only{display:none}
+@media print{
+ *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ body{background:#fff}
+ .topbar,.footer,.result-actions,.d-controls,.back,.toast,.menu-btn,.cfhelp summary{display:none!important}
+ .print-only{display:block!important}
+ .print-head{border-bottom:2px solid #1f1b54;margin:0 0 10px;padding-bottom:6px}
+ .print-head p{margin:2px 0}
+ .page-head{background:none!important;color:#000;padding:0 0 8px}
+ .page-head h1,.page-head p{color:#000!important}
+ .mode-pill{background:none;border:1px solid #999;color:#000}
+ .content > .wrap.narrow{margin-top:0;max-width:none;padding:0}
+ .result-hero,.answer,.block{box-shadow:none;border:1px solid #ccd;break-inside:avoid}
+ .result-hero,.answer{flex-direction:row!important;text-align:left!important;align-items:flex-start!important}
+ .result-hero .sub{text-align:left!important}
+ .badges{justify-content:flex-start!important}
+ .tstep,.rank,.prow{break-inside:avoid}
+ .diagram{break-inside:avoid}
+ .d-caption{background:none;color:#000;border:1px solid #ccd}
+ a{color:#000;text-decoration:none}
+}
 @media (max-width:820px){
  .hero-grid{grid-template-columns:1fr}
  .hero-art{height:220px}
