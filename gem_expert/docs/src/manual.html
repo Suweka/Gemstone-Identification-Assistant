@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Gemstone Identification Assistant - User Manual</title>
+<style>
+body{font-family:Calibri,Arial,sans-serif;font-size:11pt;line-height:1.35;color:#1a1a1a}
+h1{font-family:Calibri,Arial,sans-serif;font-size:17pt;color:#1f3864;margin-top:18pt;margin-bottom:6pt}
+h2{font-family:Calibri,Arial,sans-serif;font-size:13.5pt;color:#2f5496;margin-top:14pt;margin-bottom:4pt}
+h3{font-family:Calibri,Arial,sans-serif;font-size:11.5pt;color:#2f5496;margin-top:10pt;margin-bottom:3pt}
+p{margin-top:0;margin-bottom:6pt}
+table.data{border-collapse:collapse;width:100%;margin-bottom:6pt}
+table.data td,table.data th{border:1px solid #9aa4b5;padding:4px 6px;font-size:10pt;vertical-align:top;text-align:left}
+table.data th{background:#dbe5f1;font-weight:bold}
+.code,kbd{font-family:Consolas,monospace;font-size:10pt;background:#eef0f4}
+pre{font-family:Consolas,monospace;font-size:9pt;background:#f4f5f7;border:1px solid #d0d4dc;padding:6px;margin-bottom:6pt;white-space:pre-wrap}
+.caption{font-style:italic;font-size:9.5pt;text-align:center;color:#444;margin-bottom:10pt}
+.tcaption{font-style:italic;font-size:9.5pt;color:#444;margin-top:8pt;margin-bottom:3pt}
+.fig{text-align:center;margin-bottom:2pt}
+.tip{border-left:4px solid #2f5496;background:#eef3fb;padding:5px 8px;margin-bottom:6pt}
+.warn{border-left:4px solid #c55a11;background:#fbeee6;padding:5px 8px;margin-bottom:6pt}
+.note{background:#ffff00}
+.title{text-align:center}
+ol,ul{margin-top:0;margin-bottom:6pt}
+li{margin-bottom:3pt}
+</style></head>
+<body>
+
+<p class="title" style="margin-top:110pt;font-size:26pt;font-weight:bold;color:#1f3864">Gemstone Identification Assistant</p>
+<p class="title" style="font-size:16pt;color:#2f5496">User Manual</p>
+<p class="title" style="font-size:11pt;margin-top:20pt">Installation, operation and worked examples</p>
+<p class="fig" style="margin-top:30pt"><img src="{{IMG}}/home_hero.png" width="480"></p>
+<p class="title" style="margin-top:40pt">Sansiluni J.A.S - 225100T</p>
+<p class="title">CM3321 - Logic Programming and Artificial Cognitive Systems</p>
+<p class="title">Faculty of Information Technology, University of Moratuwa</p>
+<p class="title">Version 1.0 - 29 September 2026</p>
+
+<br clear="all" style="page-break-before:always">
+<p style="font-size:17pt;color:#1f3864;font-weight:bold;margin-bottom:8pt">Contents</p>
+<p>[[TOC]]</p>
+
+<br clear="all" style="page-break-before:always">
+
+<h1>1. About the system</h1>
+<p>The Gemstone Identification Assistant is an expert system that helps buyers, students and small traders identify common Sri Lankan gemstones. You describe a stone (its measurements and what you can see) and the system tells you:</p>
+<ul>
+<li>what the stone most likely is (species and variety, for example <i>corundum - blue sapphire</i>);</li>
+<li>whether it is likely natural, synthetic (laboratory-grown) or an imitation such as glass;</li>
+<li>how certain it is, as a percentage;</li>
+<li>what you should do next, for example obtain a laboratory certificate before buying;</li>
+<li>exactly how it reached its answer.</li>
+</ul>
+<p>It knows ten gem species (corundum, spinel, garnet, chrysoberyl, zircon, topaz, tourmaline, quartz, feldspar/moonstone and beryl), their main varieties, and two imitation materials (glass and cubic zirconia).</p>
+<div class="warn"><b>Important:</b> the system gives a first opinion only. It does not replace a certificate from the National Gem and Jewellery Authority (NGJA) or another accredited gem laboratory. Always obtain a certificate before a significant purchase.</div>
+
+<h2>1.1 Three ways to use it</h2>
+<table class="data">
+<tr><th style="width:24%">Mode</th><th style="width:34%">Use it when...</th><th>What it does</th></tr>
+<tr><td><b>Identify</b></td><td>"I don't know what this stone is."</td><td>Takes everything you enter and works forwards to the most likely answer (forward chaining).</td></tr>
+<tr><td><b>Verify</b></td><td>"The seller says it's a ruby. Is it?"</td><td>Starts from the claim and checks every condition it needs; if the claim fails it tells you exactly why (backward chaining).</td></tr>
+<tr><td><b>Step by step</b></td><td>"I want to be guided."</td><td>Asks you one question at a time, only when needed, and explains why it is asking.</td></tr>
+</table>
+<p>You can also type a question in plain English, for example <i>"Is my stone a sapphire if the RI is 1.765 and it is blue?"</i></p>
+
+<h1>2. What you need</h1>
+<p class="tcaption">Table 1. Requirements</p>
+<table class="data">
+<tr><th style="width:28%">Item</th><th>Requirement</th></tr>
+<tr><td>Computer</td><td>Windows 10 or 11, macOS or Linux, with about 100 MB of free disk space.</td></tr>
+<tr><td>SWI-Prolog</td><td>Version 9 or later (free). The system was developed and tested with <b>SWI-Prolog 10.1.16</b> (64-bit).</td></tr>
+<tr><td>Web browser</td><td>Any modern browser: Microsoft Edge, Google Chrome, Firefox or Safari.</td></tr>
+<tr><td>Project files</td><td>The <span class="code">gem_expert</span> folder.</td></tr>
+<tr><td>Internet</td><td>Only for downloading SWI-Prolog. The system itself runs offline; without internet the page simply uses standard fonts.</td></tr>
+<tr><td>Gem instruments (optional)</td><td>Refractometer, hydrostatic balance, polariscope and a 10x loupe give the best results, but the system also works with only what you can see.</td></tr>
+</table>
+
+<h1>3. Installation</h1>
+<h2>3.1 Install SWI-Prolog</h2>
+<ol>
+<li>Open <b>https://www.swi-prolog.org/download/stable</b> in your browser.</li>
+<li>Download the installer for your computer. On Windows choose the <b>64-bit</b> installer (<span class="code">swipl-...-1.x64.exe</span>).</li>
+<li>Run the installer and accept the default settings.</li>
+<li><b>Windows only:</b> on the "Install Options" page select <b>"Add swipl to the system PATH for all users"</b> (or "for the current user"). This lets you start SWI-Prolog from a terminal.</li>
+<li>Finish the installation. On macOS you can alternatively install with Homebrew (<span class="code">brew install swi-prolog</span>); on Ubuntu Linux use <span class="code">sudo apt install swi-prolog</span>.</li>
+</ol>
+<p class="note">[Insert a screenshot of the SWI-Prolog installer's "Add swipl to the system PATH" option here.]</p>
+
+<h2>3.2 Copy the project folder</h2>
+<ol>
+<li>Copy or unzip the <span class="code">gem_expert</span> folder to a convenient place, for example <span class="code">Documents\gem_expert</span>.</li>
+<li>Check that the folder contains these files: <span class="code">main.pl</span>, <span class="code">knowledge_base.pl</span>, <span class="code">engine.pl</span>, <span class="code">ui.pl</span>, <span class="code">console.pl</span>, <span class="code">diagrams.pl</span>, <span class="code">examples.pl</span>, <span class="code">query_parser.pl</span>, <span class="code">tests.pl</span> and an <span class="code">images</span> folder.</li>
+</ol>
+
+<h2>3.3 Check the installation</h2>
+<ol>
+<li>Open a terminal: on Windows, open the <span class="code">gem_expert</span> folder in File Explorer, click the address bar, type <kbd>cmd</kbd> and press Enter. On macOS or Linux, open Terminal and use <span class="code">cd</span> to go to the folder.</li>
+<li>Type <kbd>swipl --version</kbd> and press Enter. You should see a line such as <span class="code">SWI-Prolog version 10.1.16 for x64-win64</span>.</li>
+</ol>
+<div class="tip">If you see "'swipl' is not recognized", SWI-Prolog is not on the PATH. See Troubleshooting (Section 12).</div>
+
+<h1>4. Starting and stopping the system</h1>
+<h2>4.1 Start the web interface (recommended)</h2>
+<ol>
+<li>In the terminal, inside the <span class="code">gem_expert</span> folder, type:
+<pre>swipl main.pl</pre>
+You will see:
+<pre>=== Gemstone Identification Assistant loaded ===
+  server(8080).   start web interface, then open http://localhost:8080
+  start.          console interface
+  demo.           worked example
+  run_tests.      run automated tests
+
+?-</pre></li>
+<li>At the <span class="code">?-</span> prompt type the following, <b>including the full stop</b>, and press Enter:
+<pre>server(8080).</pre>
+The system replies <span class="code">Web interface running: open http://localhost:8080 in your browser.</span></li>
+<li>Open your web browser and go to <b>http://localhost:8080</b>. The home page appears (Figure 1).</li>
+</ol>
+<div class="tip">On Windows the first time you start the server, Windows Defender Firewall may ask whether to allow SWI-Prolog to communicate. Choose <b>Allow</b> for private networks. The system only listens on your own computer.</div>
+<div class="tip">Every Prolog command ends with a full stop. If nothing happens after pressing Enter, type <kbd>.</kbd> and press Enter again.</div>
+
+<h2>4.2 Stop the system</h2>
+<ol>
+<li>In the terminal type <kbd>stop_server(8080).</kbd> to stop the web server.</li>
+<li>Type <kbd>halt.</kbd> to leave SWI-Prolog. (Closing the terminal window also stops everything.)</li>
+</ol>
+
+<h1>5. A tour of the home page</h1>
+<p class="fig"><img src="{{IMG}}/home_hero.png" width="560"></p>
+<p class="caption">Figure 1. Home page</p>
+<p>The top bar links to every part of the system: <b>How it works</b>, <b>Identify</b> (the input form), <b>Step by step</b>, <b>Examples</b>, <b>Glossary</b> and <b>Knowledge base</b>. The introduction offers three buttons: <b>Start identifying</b>, <b>Ask me step by step</b> and <b>Try an example</b>, plus a box for plain-English questions. Scrolling down you will find a summary of what the system tells you, an explanation of how it works and of the two reasoning methods (Figure 2), the input form, example stones and a glossary of gem terms.</p>
+<p class="fig"><img src="{{IMG}}/home_how.png" width="540"></p>
+<p class="caption">Figure 2. "How it works" section</p>
+
+<h1>6. Describing your stone</h1>
+<p>The form (Figure 3) has two groups of fields. <b>Every field is optional.</b> Fill in what you know and leave the rest as <i>Unknown / not checked</i>. The more you fill in, the more certain the answer. Each field shows what the property means (grey text) and how to measure it (<b>HOW</b>).</p>
+<p class="fig"><img src="{{IMG}}/home_form.png" width="540"></p>
+<p class="caption">Figure 3. The input form</p>
+<p class="tcaption">Table 2. Input fields</p>
+<table class="data">
+<tr><th style="width:17%">Field</th><th style="width:26%">What it is</th><th style="width:27%">How to obtain it</th><th>Tips</th></tr>
+<tr><td>Refractive index (RI)</td><td>How strongly the stone bends light. Each gem has its own range.</td><td>Gem refractometer with contact liquid; use the highest reading.</td><td>Enter three decimals, e.g. <span class="code">1.765</span>. Allowed range 1.3-3.0. Leave blank if the scale shows no edge (over the limit) or you have no refractometer.</td></tr>
+<tr><td>Specific gravity (SG)</td><td>How heavy the stone is compared with the same volume of water.</td><td>Hydrostatic balance: SG = weight in air / (weight in air - weight in water).</td><td>Enter two decimals, e.g. <span class="code">4.00</span>. Allowed range 1.0-8.0.</td></tr>
+<tr><td>Optic character</td><td>Whether light passes as one ray (singly refractive) or is split in two (doubly refractive).</td><td>Polariscope: rotate the stone between crossed filters. A conoscope shows uniaxial or biaxial.</td><td>If you only know it is doubly refractive, choose <i>Doubly refractive (axis not known)</i>.</td></tr>
+<tr><td>Colour</td><td>The main body colour.</td><td>Look in daylight against a white background.</td><td>Choose the closest colour.</td></tr>
+<tr><td>Optical effect</td><td>Star, cat's-eye, colour change or moonstone glow.</td><td>Look under a single light source and rotate the stone; compare daylight and lamp light for colour change.</td><td>Choose <i>No special effect</i> if you looked and saw none.</td></tr>
+<tr><td>Inclusions</td><td>Tiny features inside the stone that reveal how it formed.</td><td>Examine with a 10x jeweller's loupe.</td><td>Choose the most obvious type. <i>None visible</i> means you looked and the stone is clean.</td></tr>
+</table>
+<p>Below the fields are three action panels: <b>Identify my stone</b>, <b>Check a claim</b> (choose a gem in the list, then <b>Verify</b>) and <b>Ask me step by step</b>. <b>Clear the form</b> empties all fields.</p>
+
+<h1>7. Identifying a stone</h1>
+<h2>7.1 Steps</h2>
+<ol>
+<li>Fill in the fields you know (Section 6).</li>
+<li>Press <b>Identify stone</b>.</li>
+<li>Read the result page (Figure 4).</li>
+</ol>
+
+<h2>7.2 Reading the result</h2>
+<p class="fig"><img src="{{IMG}}/ident_top.png" width="430"></p>
+<p class="caption">Figure 4. Result for a natural blue sapphire</p>
+<p class="tcaption">Table 3. Parts of the result page</p>
+<table class="data">
+<tr><th style="width:26%">Part</th><th>Meaning</th></tr>
+<tr><td>Title (e.g. <i>Blue sapphire</i>)</td><td>The most likely identification, with the species underneath.</td></tr>
+<tr><td>Confidence badge</td><td><b>Strong match</b> (green): optic character, RI and SG all agree. <b>Possible match</b> (amber): data is incomplete or fits more than one gem. <b>No match</b> (grey): nothing in the knowledge base fits.</td></tr>
+<tr><td>Certainty bar</td><td>How strongly the expert rules believe the conclusion, from 0% to 100%.</td></tr>
+<tr><td>Origin badge</td><td><b>Likely natural</b> (green), <b>Synthetic</b> or <b>laboratory test recommended</b> (amber), <b>Imitation</b> or <b>Glass or synthetic</b> (red), <b>Not determined</b> (grey, usually because no inclusions were reported). A <b>Probably heat-treated</b> badge appears when heat indicators were seen.</td></tr>
+<tr><td>What you should do</td><td>Practical recommendations.</td></tr>
+<tr><td>What you told us</td><td>Your inputs; fields you left empty show "not given".</td></tr>
+<tr><td>Reasoning diagram</td><td>A picture of how the rules fired (Section 7.3).</td></tr>
+<tr><td>How the system reached this</td><td>Each reasoning step in plain English, with the rule number, its certainty, the expert knowledge behind it and its source.</td></tr>
+<tr><td>About (gem)</td><td>Reference facts about the identified gem.</td></tr>
+<tr><td>Technical trace</td><td>Click to open the full list of facts and fired rules (for gemmologists and examiners).</td></tr>
+<tr><td>Buttons</td><td><b>Edit my inputs</b> returns to the form with your values filled in; <b>Start a new stone</b> clears it.</td></tr>
+</table>
+
+<h2>7.3 Using the reasoning diagram</h2>
+<p class="fig"><img src="{{IMG}}/ident_diagram.png" width="430"></p>
+<p class="caption">Figure 5. Forward-chaining diagram</p>
+<p>Your inputs are the blue boxes at the top. Each dark oval is a rule; its gold number shows the order in which it fired. Arrows show which facts made the rule fire and which new fact it added. Use the buttons:</p>
+<ul>
+<li><b>Play step by step</b>: replays the reasoning automatically, one rule at a time, with a caption explaining each step.</li>
+<li><b>Back</b> / <b>Next</b>: move one step at a time yourself.</li>
+<li><b>Show all</b>: shows the complete diagram again.</li>
+</ul>
+<p>Hover the mouse over any box to see its full details.</p>
+
+<h2>7.4 When some data is missing</h2>
+<p>If you leave out the RI, SG or optic character, the system cannot confirm a species. Instead it lists <b>Ranked possibilities</b> (Figure 6): every gem consistent with what you entered, ordered by certainty, with the evidence for each. Measure the missing properties to narrow the list.</p>
+<p class="fig"><img src="{{IMG}}/ranked.png" width="380"></p>
+<p class="caption">Figure 6. Ranked possibilities for a blue, uniaxial stone with no RI or SG</p>
+
+<h1>8. Checking a claim (Verify)</h1>
+<ol>
+<li>Fill in the fields you know.</li>
+<li>In the <b>Check a claim</b> panel choose the gem the seller claims, e.g. <i>Ruby</i>.</li>
+<li>Press <b>Verify</b>.</li>
+</ol>
+<p>The answer is a clear <b>Yes</b> (green tick) or <b>No</b> (red cross). For a <b>No</b>, the page shows the <b>main reason</b>, what your data points to instead, and a <b>Why not?</b> list tracing the failure back through the rules (Figure 7). The backward-chaining diagram shows the question at the top, the rules tried below it, and each condition marked proved (green), failed (red) or never checked (dashed grey).</p>
+<p class="fig"><img src="{{IMG}}/verify_no_top.png" width="430"></p>
+<p class="caption">Figure 7. A failed verification: a red spinel offered as a ruby</p>
+
+<h1>9. Step-by-step consultation</h1>
+<ol>
+<li>Click <b>Step by step</b> in the top bar (or <b>Ask me step by step</b> on the home page).</li>
+<li>Choose what you want to find out. <i>Find the species</i> lets the system test one gem hypothesis after another. You can also choose a particular gem.</li>
+<li>Answer each question and press <b>Answer</b>, or press <b>I don't know</b>.</li>
+<li>Open <b>Why are you asking this?</b> at any time to see which rule the system is testing and why it needs the answer (Figure 8).</li>
+<li>When the system has enough information it shows the answer, how many questions it needed, and a diagram of its reasoning.</li>
+</ol>
+<p class="fig"><img src="{{IMG}}/consult_q1.png" width="430"></p>
+<p class="caption">Figure 8. A consultation question with its explanation</p>
+<div class="tip">The system asks only what it needs. For example, when checking for ruby, answering <i>Isotropic</i> to the first question ends the consultation immediately, because a ruby must be doubly refractive.</div>
+
+<h1>10. Asking in plain English</h1>
+<p>Type a question into the box on the home page and press <b>Ask</b>. The system shows what it understood (Figure 9) and then answers. Examples:</p>
+<ul>
+<li><i>Is my stone a sapphire if the RI is 1.765 and it is blue?</i></li>
+<li><i>What is a singly refractive red stone with SG 3.60?</i></li>
+<li><i>Could it be glass? isotropic, RI 1.52, gas bubbles</i></li>
+<li><i>RI 1.52, SG 2.57, biaxial, colourless, with adularescence</i></li>
+</ul>
+<p>Understood words include RI / refractive index, SG / specific gravity, singly or doubly refractive, uniaxial, biaxial, colour names, star, cat's eye, colour change, adularescence, silk, crystals, fingerprints, gas bubbles, curved lines, swirl marks, discoid fractures, clean, and gem names. Words the system did not use are listed so you can rephrase.</p>
+<p class="fig"><img src="{{IMG}}/ask_result.png" width="430"></p>
+<p class="caption">Figure 9. A plain-English question and how it was understood</p>
+
+<h1>11. Worked examples</h1>
+<p>The <b>Example stones to try</b> section of the home page has 14 ready-made stones (Figure 10). Press <b>Try it</b> on any card to copy its readings into the form, then press <b>Identify stone</b> or <b>Verify</b>.</p>
+<p class="fig"><img src="{{IMG}}/home_examples.png" width="540"></p>
+<p class="caption">Figure 10. Example stones</p>
+
+<h2>11.1 Example 1: a natural blue sapphire</h2>
+<table class="data">
+<tr><th style="width:26%">Input</th><td>RI 1.765, SG 4.00, Uniaxial, Blue, Silk</td></tr>
+<tr><th>Result</th><td><b>Blue sapphire</b> (species corundum) - Strong match, 90% certain; origin <b>Likely natural (76%)</b>.</td></tr>
+<tr><th>Recommendation</th><td>Obtain an NGJA or other accredited laboratory certificate before purchase.</td></tr>
+<tr><th>Why</th><td>Rule r1 identified corundum from the optic character, RI and SG; rule r24 named the blue variety; rule r46 used the rutile silk as evidence of natural origin.</td></tr>
+</table>
+
+<h2>11.2 Example 2: a glass imitation</h2>
+<table class="data">
+<tr><th style="width:26%">Input</th><td>RI 1.60, Isotropic, Round gas bubbles (SG not measured)</td></tr>
+<tr><th>Result</th><td><b>Imitation: Glass</b> - 85% certain; origin <b>Imitation (not a natural gemstone)</b> (Figure 11).</td></tr>
+<tr><th>Recommendation</th><td>This is an imitation with little gem value; do not pay gemstone prices.</td></tr>
+</table>
+<p class="fig"><img src="{{IMG}}/glass.png" width="430"></p>
+<p class="caption">Figure 11. A glass imitation is detected</p>
+
+<h2>11.3 Example 3: checking a claim that fails</h2>
+<table class="data">
+<tr><th style="width:26%">Input</th><td>RI 1.718, SG 3.60, Isotropic, Red; claim: <i>Ruby</i></td></tr>
+<tr><th>Result</th><td><b>No</b> - the stone does not match ruby. Main reason: a ruby must be doubly refractive (uniaxial) but the stone is singly refractive. The data points to <b>Red spinel</b> instead (Figure 7).</td></tr>
+</table>
+
+<h1>12. Troubleshooting</h1>
+<p class="tcaption">Table 4. Common problems and solutions</p>
+<table class="data">
+<tr><th style="width:34%">Problem</th><th>Solution</th></tr>
+<tr><td>"'swipl' is not recognized as an internal or external command"</td><td>SWI-Prolog is not on the PATH. Re-run the installer and select "Add swipl to the system PATH", then open a <b>new</b> terminal. Alternatively run it with its full path: <span class="code">"C:\Program Files\swipl\bin\swipl.exe" main.pl</span>.</td></tr>
+<tr><td>Error "port 8080 is already in use" (or similar) after <span class="code">server(8080).</span></td><td>Another program uses that port. Start on a different port, e.g. <kbd>server(8081).</kbd>, and open http://localhost:8081.</td></tr>
+<tr><td>Browser shows "This site can't be reached"</td><td>The server is not running. Check that you typed <kbd>server(8080).</kbd> with the full stop, and that the terminal window is still open. Check the port number in the address.</td></tr>
+<tr><td>Nothing happens after typing a command</td><td>Prolog is waiting for the full stop. Type <kbd>.</kbd> and press Enter.</td></tr>
+<tr><td>Error messages about files not found when running <span class="code">swipl main.pl</span></td><td>The terminal is not in the <span class="code">gem_expert</span> folder. Use <span class="code">cd</span> to move into it, or open the terminal from that folder.</td></tr>
+<tr><td>"Please check your input" page</td><td>A value is outside the allowed range (RI 1.3-3.0, SG 1.0-8.0) or is not a number. Press <b>Go back and fix it</b>.</td></tr>
+<tr><td>Result says "We could not identify this stone"</td><td>Re-check the readings (RI usually has three decimals, SG two) and the optic character. The stone may also be outside the system's scope; seek a laboratory test.</td></tr>
+<tr><td>Changes to the program files do not appear</td><td>In the Prolog terminal type <kbd>make.</kbd> to reload changed files, then refresh the browser (Ctrl+F5). Or stop and restart the system.</td></tr>
+<tr><td>Windows Firewall message on first start</td><td>Choose <b>Allow</b> for private networks.</td></tr>
+<tr><td>The page fonts look plain</td><td>You are offline; the page falls back to standard fonts. Everything still works.</td></tr>
+</table>
+
+<h1>13. Console mode (without a browser)</h1>
+<p>If the web interface cannot be used, the same functions are available in the terminal.</p>
+<ol>
+<li>Start SWI-Prolog with <kbd>swipl main.pl</kbd>.</li>
+<li>Type <kbd>start.</kbd> A menu appears:
+<pre>What would you like to do?
+  1. Identify a stone  - "I don't know what it is"      (forward chaining)
+  2. Check a claim     - "The seller says it's a ruby"   (backward chaining)
+  3. Step by step      - asks only what it needs; type WHY at any question
+  4. Ask in English    - e.g. is it a ruby if the RI is 1.765 and it is red
+  5. Run the demo      - natural blue sapphire example
+  6. Quit
+Choose 1-6:</pre></li>
+<li>Type a number and press Enter (no full stop is needed inside the menu). Answer each question by typing a number or a value; press Enter on its own if you do not know.</li>
+<li>In step-by-step mode, type <kbd>why</kbd> at any question to see why it is being asked:
+<pre>What is the optic character?
+    0. Don't know
+    1. Isotropic
+    2. Uniaxial
+    ...
+&gt; why
+WHY I AM ASKING:
+  - I am trying to find out: is it Corundum?  Rule r1 says: IF Optic: Uniaxial AND RI in
+    Corundum range AND SG in Corundum range THEN Species: Corundum.
+  - To test rule r1 I need to know: the optic character.</pre></li>
+<li>After each result you can type <kbd>y</kbd> to see the technical trace.</li>
+<li>Choose <b>6</b> to leave the menu, then type <kbd>halt.</kbd></li>
+</ol>
+<p>The command <kbd>demo.</kbd> runs the worked blue sapphire example directly.</p>
+
+<h1>14. Running the automated tests</h1>
+<ol>
+<li>Start SWI-Prolog with <kbd>swipl main.pl</kbd>.</li>
+<li>Type <kbd>run_tests.</kbd></li>
+<li>The last line should read:
+<pre>% All 41 tests passed</pre></li>
+</ol>
+<p>The rule base can also be exported to a spreadsheet file with <kbd>export_rules_csv('rules_table.csv').</kbd></p>
+
+<h1>15. Quick reference</h1>
+<p class="tcaption">Table 5. Commands</p>
+<table class="data">
+<tr><th style="width:36%">Command (type at the ?- prompt)</th><th>Effect</th></tr>
+<tr><td class="code">swipl main.pl</td><td>(in the terminal) Load the system.</td></tr>
+<tr><td class="code">server(8080).</td><td>Start the web interface at http://localhost:8080.</td></tr>
+<tr><td class="code">stop_server(8080).</td><td>Stop the web interface.</td></tr>
+<tr><td class="code">start.</td><td>Start the console interface.</td></tr>
+<tr><td class="code">demo.</td><td>Run the worked blue sapphire example.</td></tr>
+<tr><td class="code">run_tests.</td><td>Run the 41 automated tests.</td></tr>
+<tr><td class="code">make.</td><td>Reload program files after editing them.</td></tr>
+<tr><td class="code">halt.</td><td>Leave SWI-Prolog.</td></tr>
+</table>
+
+<p class="tcaption">Table 6. Web pages</p>
+<table class="data">
+<tr><th style="width:36%">Address</th><th>Page</th></tr>
+<tr><td class="code">http://localhost:8080/</td><td>Home page, form, examples, glossary</td></tr>
+<tr><td class="code">http://localhost:8080/consult</td><td>Step-by-step consultation</td></tr>
+<tr><td class="code">http://localhost:8080/rules</td><td>Knowledge base: gem facts and all rules</td></tr>
+</table>
+
+</body></html>

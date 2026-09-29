@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Gemstone Identification Assistant - Project Report</title>
+<style>
+body{font-family:Calibri,Arial,sans-serif;font-size:11pt;line-height:1.35;color:#1a1a1a}
+h1{font-family:Calibri,Arial,sans-serif;font-size:17pt;color:#1f3864;margin-top:18pt;margin-bottom:6pt}
+h2{font-family:Calibri,Arial,sans-serif;font-size:13.5pt;color:#2f5496;margin-top:14pt;margin-bottom:4pt}
+h3{font-family:Calibri,Arial,sans-serif;font-size:11.5pt;color:#2f5496;margin-top:10pt;margin-bottom:3pt}
+p{margin-top:0;margin-bottom:6pt;text-align:justify}
+table.data{border-collapse:collapse;width:100%;margin-bottom:4pt}
+table.data td,table.data th{border:1px solid #9aa4b5;padding:3px 5px;font-size:9.5pt;vertical-align:top;text-align:left}
+table.data th{background:#dbe5f1;font-weight:bold}
+table.datasm{border-collapse:collapse;width:100%;margin-bottom:4pt}
+table.datasm td,table.datasm th{border:1px solid #9aa4b5;padding:3px 4px;font-size:8.5pt;vertical-align:top;text-align:left}
+table.datasm th{background:#dbe5f1;font-weight:bold}
+.code{font-family:Consolas,monospace;font-size:8.5pt}
+pre{font-family:Consolas,monospace;font-size:8.5pt;background:#f4f5f7;border:1px solid #d0d4dc;padding:6px;margin-bottom:6pt;white-space:pre-wrap}
+.caption{font-style:italic;font-size:9.5pt;text-align:center;color:#444;margin-bottom:10pt}
+.tcaption{font-style:italic;font-size:9.5pt;color:#444;margin-top:8pt;margin-bottom:3pt}
+.fig{text-align:center;margin-bottom:2pt}
+.note{background:#ffff00}
+.ref{text-align:left}
+.title{text-align:center}
+.eq{text-align:center;font-family:Cambria Math,Cambria,serif;font-size:11pt;margin:6pt 0}
+ul,ol{margin-top:0;margin-bottom:6pt}
+li{margin-bottom:2pt}
+</style></head>
+<body>
+
+<p class="title" style="margin-top:70pt;font-size:13pt;font-weight:bold;color:#1f3864">University of Moratuwa</p>
+<p class="title" style="font-size:12pt;color:#555">Faculty of Information Technology</p>
+<p class="title" style="margin-top:14pt;font-size:12pt;color:#555">CM3321 - Logic Programming and Artificial Cognitive Systems</p>
+<p class="title" style="font-size:26pt;font-weight:bold;color:#1f3864;margin-top:30pt">Gemstone Identification Assistant</p>
+<p class="title" style="font-size:15pt;color:#2f5496">A Rule-Based Expert System for Identifying Sri Lankan Gemstones and Detecting Synthetics and Imitations</p>
+<p class="title" style="font-size:12pt;margin-top:30pt">Project Report</p>
+<p class="title" style="margin-top:70pt">Name: Sansiluni J.A.S</p>
+<p class="title">Index number: 225100T</p>
+<p class="title">Submission date: 29 September 2026</p>
+<p class="title" style="margin-top:40pt;font-size:10pt;color:#555">Implemented in SWI-Prolog 10.1.16</p>
+
+<br clear="all" style="page-break-before:always">
+
+<h1 style="page-break-before:avoid">Abstract</h1>
+<p>Gem buyers, students and small traders in Sri Lanka frequently struggle to tell a valuable natural gemstone from a cheaper look-alike, a laboratory-grown synthetic or a glass imitation, while professional laboratory testing costs time and money. This project designs and implements the <b>Gemstone Identification Assistant</b>, a rule-based expert system written in SWI-Prolog that gives a quick, explained first opinion. The knowledge base contains 297 facts and 62 production rules, acquired from standard gemmological references and organised in four chained layers: species, variety, origin and treatment, and buying recommendation. The inference engine provides three reasoning modes over the same rule base: forward chaining (data-driven identification), backward chaining (goal-driven verification of a claim, implemented as a meta-interpreter that builds proof trees) and an interactive consultation that asks the user only for the facts it needs. MYCIN-style certainty factors express the confidence of each conclusion and turn incomplete data into a ranked list of candidates. A full explanation facility answers <i>How</i>, <i>Why</i> and <i>Why not</i>, both as a technical trace and in plain language, and animated reasoning diagrams show how each chaining method worked for the user's own input. A web interface, a console interface and a natural-language query box built with a Definite Clause Grammar make the system accessible to non-experts. Eighteen documented test cases and 41 automated unit tests pass. The report closes with a discussion of how the system models expert cognition, a comparison with machine-learning approaches, and an honest account of its limitations.</p>
+
+<br clear="all" style="page-break-before:always">
+<p style="font-size:17pt;color:#1f3864;font-weight:bold;margin-bottom:8pt">Contents</p>
+<p class="ref">[[TOC]]</p>
+
+<br clear="all" style="page-break-before:always">
+
+<!-- ================================================================== -->
+<h1>1. Introduction and Problem Definition</h1>
+
+<h2>1.1 Background</h2>
+<p>Sri Lanka is one of the world's most important sources of coloured gemstones. Sapphire, ruby, spinel, chrysoberyl (including alexandrite and cat's-eye), garnet, zircon, topaz, tourmaline, quartz and moonstone are mined and traded in large numbers, particularly around Ratnapura. The same trade attracts imitations (coloured glass, cubic zirconia), synthetics (laboratory-grown corundum and spinel) and undisclosed treatments such as heating. Gemmologists separate these materials with a small set of physical and optical tests: refractive index, specific gravity, optic character, optical phenomena and the inclusions seen under magnification [1]-[4]. These tests follow well-documented reasoning, which makes gem identification a good candidate for a rule-based expert system.</p>
+
+<h2>1.2 Problem statement</h2>
+<p>Buyers, students and small traders often cannot tell a valuable natural gem from a cheaper look-alike or a fake, and deception is a known problem in the local trade. Accredited laboratories such as the National Gem and Jewellery Authority (NGJA) of Sri Lanka [7] give reliable answers but cost money and time, so they are not practical for every stone a buyer is offered. There is a need for a tool that takes the observations an informed buyer or student can realistically make and returns a quick, <b>explained</b> first opinion: what the stone probably is, whether it is likely natural, synthetic or an imitation, how confident that opinion is, and what the buyer should do next.</p>
+
+<h2>1.3 Aim and objectives</h2>
+<p>The aim is to build an expert system that identifies common Sri Lankan gemstones and detects synthetics and imitations, and that explains its reasoning. The objectives are:</p>
+<ol>
+<li>O1 - Acquire gemmological knowledge from recognised sources and document how it became facts and rules.</li>
+<li>O2 - Represent the knowledge as Prolog facts and production rules, with at least 20 of each.</li>
+<li>O3 - Implement both forward and backward chaining over the same rule base.</li>
+<li>O4 - Provide an explanation facility that shows user input, facts, rules fired, reasoning and conclusion.</li>
+<li>O5 - Handle incomplete data and express the confidence of conclusions.</li>
+<li>O6 - Provide a user-friendly interface for non-experts.</li>
+<li>O7 - Test the system systematically and document it with a user manual.</li>
+</ol>
+
+<h2>1.4 What the system specialises in</h2>
+<p>The system specialises in ten gem species that are common in Sri Lanka (corundum, spinel, garnet, chrysoberyl, zircon, topaz, tourmaline, quartz, orthoclase feldspar and beryl), eighteen named varieties (for example ruby, blue sapphire, padparadscha, alexandrite, cat's-eye chrysoberyl, moonstone, hessonite and aquamarine) and the two most common imitation materials, glass and cubic zirconia. It reasons from six observable properties: refractive index (RI), specific gravity (SG), optic character, body colour, optical phenomenon and the dominant inclusion type.</p>
+
+<h2>1.5 Conclusions the system provides</h2>
+<p class="tcaption">Table 1. Conclusions produced by the system</p>
+<table class="data">
+<tr><th style="width:24%">Conclusion</th><th>Description and example</th></tr>
+<tr><td>Species</td><td>The mineral species, e.g. <i>corundum</i>, from optic character, RI and SG.</td></tr>
+<tr><td>Variety</td><td>The trade variety within the species, e.g. corundum + blue gives <i>blue sapphire</i>; chrysoberyl + colour change gives <i>alexandrite</i>.</td></tr>
+<tr><td>Imitation</td><td>Glass or cubic zirconia, e.g. an isotropic stone with a glass RI and gas bubbles.</td></tr>
+<tr><td>Origin and treatment</td><td>Likely natural, synthetic (laboratory-grown), imitation, glass-or-synthetic, laboratory test needed, or not determined; and probable heat treatment.</td></tr>
+<tr><td>Confidence</td><td>A certainty factor for every derived fact (e.g. <i>blue sapphire 90%</i>), a confidence level (strong match / possible match / no match), and a ranked candidate list when data is missing (e.g. <i>Spinel 52%, Garnet 52%</i>).</td></tr>
+<tr><td>Recommendation</td><td>Practical advice, e.g. <i>"Features are consistent with a natural stone. Obtain an NGJA certificate before purchase."</i></td></tr>
+<tr><td>Explanation</td><td>How the conclusion was reached, why a question is being asked, and why an alternative was rejected.</td></tr>
+</table>
+
+<h2>1.6 Scope and limitations</h2>
+<p>The system is a decision-support tool for a first opinion; it is <b>not</b> a replacement for laboratory certification. The knowledge base covers ten species and two imitations. Heat treatment can only be suggested from a visible indicator (discoid fractures), not proven. The system assumes the user can take basic readings (a refractometer, a hydrostatic balance and a polariscope) but works with partial data. Section 7.3 discusses the limitations in detail.</p>
+
+<!-- ================================================================== -->
+<h1>2. Knowledge Engineering</h1>
+<p>Knowledge engineering was carried out as an iterative process (Figure 1). The domain was studied from recognised sources, individual knowledge statements were extracted into a knowledge acquisition table, encoded as Prolog facts and rules, tested, and refined when tests revealed gaps.</p>
+<p class="fig"><img src="{{IMG}}/fig_ke.png" width="600"></p>
+<p class="caption">Figure 1. Knowledge engineering process used in the project</p>
+
+<h2>2.1 Domain study: gemmology concepts</h2>
+<p><b>Refractive index (RI)</b> measures how strongly a gem slows and bends light. It is read on a gem refractometer and is the single most diagnostic test for most transparent gems [3]. Corundum reads about 1.762-1.770, quartz about 1.544-1.553 [1], [3]. Standard refractometers cannot read above about 1.81, so very high-RI materials such as high zircon and cubic zirconia show as "over the limit".</p>
+<p><b>Specific gravity (SG)</b> is the density of the stone relative to water, measured by hydrostatic weighing. It separates gems with similar RI; corundum (about 4.00) is much heavier than spinel (about 3.60) [2].</p>
+<p><b>Optic character</b> describes how light passes through the crystal. Isotropic (singly refractive) materials such as spinel, garnet, glass and cubic zirconia transmit light as a single ray. Anisotropic (doubly refractive) materials split it in two; they are <i>uniaxial</i> (one optic axis: corundum, quartz, beryl, tourmaline, zircon) or <i>biaxial</i> (two axes: chrysoberyl, topaz, feldspar) [2], [3]. It is determined with a polariscope and conoscope. <b>Birefringence</b> is the difference between the two RI readings of a doubly refractive gem.</p>
+<p><b>Optical phenomena</b> are special light effects: asterism (a star) and chatoyancy (a cat's-eye) caused by aligned needle-like inclusions, colour change (typical of alexandrite) and adularescence (the floating sheen of moonstone) [1].</p>
+<p><b>Inclusions</b> are the gemmologist's main field evidence for origin. Rutile "silk" and mineral crystals indicate natural growth; curved growth lines (striae) and round gas bubbles indicate flame-fusion (Verneuil) synthetics; swirl marks and bubbles indicate glass; discoid fractures around crystals indicate heat treatment [1], [4], [5].</p>
+<p><b>Synthetic versus imitation.</b> A synthetic has the same chemistry and properties as the natural gem but was grown in a laboratory; an imitation merely looks similar and has different properties [4]. The distinction matters because a synthetic ruby is still corundum and passes the species tests, so only inclusion evidence can reveal it.</p>
+<p>Table 2 summarises the property facts acquired for each material. These are refractometer and hydrostatic <i>reading ranges</i>, which are slightly wider than textbook mean values so that normal variation within a species is covered.</p>
+<p class="tcaption">Table 2. Property facts held in the knowledge base (generated from knowledge_base.pl)</p>
+{{t_facts}}
+
+<h2>2.2 Domain study: expert system concepts and related work</h2>
+<p>An expert system captures the specialist knowledge of human experts so that non-experts can apply it [10], [11]. The classic architecture separates a <b>knowledge base</b> (domain facts and heuristics), an <b>inference engine</b> (a domain-independent reasoning procedure), <b>working memory</b> (the facts of the current case) and a <b>user interface</b> with an <b>explanation facility</b> [11]. This separation means the knowledge can be extended without changing the reasoning code.</p>
+<p><b>Production rules</b> (IF conditions THEN conclusion) are the most widely used knowledge representation in expert systems because they match the way experts state heuristics and because each rule can be explained individually [10]. Two inference strategies operate on production rules [11], [17]:</p>
+<ul>
+<li><b>Forward chaining</b> is data-driven. Starting from the known facts, the engine repeatedly finds a rule whose conditions are all satisfied, adds its conclusion to working memory, and stops when no rule can add anything new. When several rules are applicable, a <b>conflict resolution</b> strategy (for example rule order or specificity) chooses which fires, and <b>refractoriness</b> prevents the same rule instance firing twice.</li>
+<li><b>Backward chaining</b> is goal-driven. Starting from a hypothesis, the engine looks for rules that conclude it and tries to prove their conditions as sub-goals, recursively, until it reaches known facts. Prolog's own execution model is backward chaining with depth-first search and backtracking [12].</li>
+</ul>
+<p>The best-known rule-based expert system, <b>MYCIN</b>, diagnosed bacterial infections using about 450 backward-chained rules [8]. It introduced two ideas this project adopts. The first is <b>certainty factors</b>: each rule carries a measure of belief, and evidence from several rules is combined incrementally [9]. The second is a consultation dialogue that asks the user only for the information a rule needs and can answer "why?" by showing the rule being tried [8], [9]. Later work such as XPLAIN argued that good explanations must justify the reasoning, not merely replay it [20]. That motivated the plain-language explanations and the source-linked rule justifications in this system.</p>
+<p>Bratko [12] and Merritt [13] show how to build expert system shells in Prolog: rules are stored as data, a meta-interpreter proves goals and records a proof tree for "how" explanations, and questions are asked lazily during proof. Sterling and Shapiro [14] describe the meta-interpreter technique in depth, and Pereira and Warren [15] introduced Definite Clause Grammars (DCGs), which this project uses for its natural-language interface. SWI-Prolog [16] provides the HTTP and HTML libraries used for the web interface.</p>
+<p class="note">[Add here 2-3 published papers on gemstone identification systems or rule-based expert systems in mineralogy/gemmology found on Google Scholar, and state how this system differs, e.g. its Sri Lankan focus, certainty factors, three reasoning modes and plain-language explanation facility. Add them to the reference list.]</p>
+
+<h2>2.3 Knowledge acquisition</h2>
+<p>Knowledge was acquired from documentary sources: the GIA Gem Encyclopedia [1], Webster's <i>Gems</i> [2], Read's <i>Gemmology</i> [3], Matlins and Bonanno's <i>Gem Identification Made Easy</i> [4], the International Gem Society [5], the Gemdat database [6] and the NGJA [7]. Each usable piece of knowledge was written as a short statement, classified as a fact or a rule, and encoded in Prolog. Every rule in the knowledge base stores its justification and source in <span class="code">rule_info(Id, Justification, Source)</span>, so the acquisition trail is kept inside the system itself and appears in every explanation. Table 3 shows a representative selection of the 41 main knowledge statements; the complete rule base with justifications is in Appendix A.</p>
+<p>Three knowledge engineering decisions were made during acquisition:</p>
+<ol>
+<li><b>Reading ranges plus tolerance.</b> Published ranges were stored as reading ranges, and the engine adds a measurement tolerance of +/-0.005 for RI and +/-0.03 for SG to allow for instrument and operator error. A reading that fits only because of the tolerance is accepted with reduced certainty (Section 2.5).</li>
+<li><b>Layered rules.</b> Knowledge was organised by the question it answers (species, variety, origin, advice), so that conclusions of one layer become conditions of the next.</li>
+<li><b>Explicit uncertainty.</b> Where sources describe evidence as typical rather than conclusive (for example, fingerprints usually indicate a natural stone, but flux-grown synthetics show similar features), the rule was given a lower certainty factor rather than being omitted.</li>
+</ol>
+<p class="tcaption">Table 3. Knowledge acquisition table (representative entries; KE = knowledge engineer decision)</p>
+<table class="datasm">
+<tr><th>#</th><th style="width:38%">Knowledge statement (from source)</th><th>Source</th><th>Type</th><th style="width:34%">Prolog form</th></tr>
+<tr><td>K1</td><td>Corundum reads about 1.762-1.770 on the refractometer.</td><td>[1]</td><td>Fact</td><td class="code">ri_range(corundum, 1.757, 1.780).</td></tr>
+<tr><td>K2</td><td>Corundum has SG about 4.00.</td><td>[1]</td><td>Fact</td><td class="code">sg_range(corundum, 3.95, 4.10).</td></tr>
+<tr><td>K3</td><td>Corundum is doubly refractive and uniaxial.</td><td>[1]</td><td>Fact</td><td class="code">optic(corundum, uniaxial).</td></tr>
+<tr><td>K4</td><td>Spinel is singly refractive, RI about 1.718, SG about 3.60.</td><td>[2]</td><td>Fact</td><td class="code">optic(spinel, isotropic). ri_range(spinel, 1.712, 1.736).</td></tr>
+<tr><td>K5</td><td>Garnets are singly refractive, RI 1.73-1.89, SG 3.6-4.3 depending on type.</td><td>[2]</td><td>Fact</td><td class="code">ri_range(garnet, 1.730, 1.890).</td></tr>
+<tr><td>K6</td><td>Chrysoberyl is biaxial, RI about 1.746-1.755, SG about 3.73.</td><td>[1]</td><td>Fact</td><td class="code">optic(chrysoberyl, biaxial).</td></tr>
+<tr><td>K7</td><td>High zircon is uniaxial with very high RI and SG about 4.7.</td><td>[6]</td><td>Fact</td><td class="code">sg_range(zircon, 4.60, 4.80).</td></tr>
+<tr><td>K8</td><td>Topaz is biaxial, RI about 1.61-1.64, SG about 3.53.</td><td>[1]</td><td>Fact</td><td class="code">ri_range(topaz, 1.606, 1.644).</td></tr>
+<tr><td>K9</td><td>Quartz is uniaxial, RI 1.544-1.553, SG 2.65.</td><td>[3]</td><td>Fact</td><td class="code">sg_range(quartz, 2.60, 2.70).</td></tr>
+<tr><td>K10</td><td>Moonstone (orthoclase) is biaxial, RI about 1.52, SG about 2.57.</td><td>[3]</td><td>Fact</td><td class="code">ri_range(feldspar, 1.515, 1.530).</td></tr>
+<tr><td>K11</td><td>Beryl is uniaxial, RI about 1.57-1.60, SG about 2.7.</td><td>[6]</td><td>Fact</td><td class="code">optic(beryl, uniaxial).</td></tr>
+<tr><td>K12</td><td>Glass is singly refractive with a wide range of RI.</td><td>[5]</td><td>Fact</td><td class="code">ri_range(glass, 1.440, 1.770).</td></tr>
+<tr><td>K13</td><td>Cubic zirconia is isotropic with SG 5.6-6.0.</td><td>[1]</td><td>Fact</td><td class="code">sg_range(cubic_zirconia, 5.60, 6.00).</td></tr>
+<tr><td>K14</td><td>Corundum occurs in red, pink, orange, yellow, green, blue, purple and colourless.</td><td>[1]</td><td>Fact</td><td class="code">colour(corundum, blue).</td></tr>
+<tr><td>K15</td><td>Chrysoberyl can show chatoyancy and colour change.</td><td>[1]</td><td>Fact</td><td class="code">phenomenon(chrysoberyl, colour_change).</td></tr>
+<tr><td>K16</td><td>Readings vary slightly with instrument and operator.</td><td>KE</td><td>Fact</td><td class="code">tolerance(ri, 0.005). tolerance(sg, 0.03).</td></tr>
+<tr><td>K17</td><td>A uniaxial stone with corundum RI and SG is corundum.</td><td>[1]</td><td>Rule</td><td class="code">rule(r1, [optic(uniaxial), ri_in(corundum), sg_in(corundum)], species(corundum)).</td></tr>
+<tr><td>K18</td><td>A singly refractive stone with RI about 1.72 and SG about 3.60 is spinel.</td><td>[2]</td><td>Rule</td><td class="code">rule(r2, [optic(isotropic), ri_in(spinel), sg_in(spinel)], species(spinel)).</td></tr>
+<tr><td>K19</td><td>An isotropic stone with a glass RI and gas bubbles that matches no species is glass.</td><td>[5]</td><td>Rule</td><td class="code">rule(r11, [optic(isotropic), ri_in(glass), inclusion(gas_bubbles), not(species(_))], imitation(glass)).</td></tr>
+<tr><td>K20</td><td>Swirl marks are typical of moulded glass.</td><td>[4]</td><td>Rule</td><td class="code">rule(r12, [inclusion(swirl_marks), not(species(_))], imitation(glass)).</td></tr>
+<tr><td>K21</td><td>An isotropic stone with SG 5.6-6.0 is cubic zirconia.</td><td>[1]</td><td>Rule</td><td class="code">rule(r13, [optic(isotropic), sg_in(cubic_zirconia)], imitation(cubic_zirconia)).</td></tr>
+<tr><td>K22</td><td>When data is missing, every gem consistent with all supplied properties remains possible.</td><td>KE</td><td>Rule</td><td class="code">rule(r14, [partial_data, ..., optic_ok(G), ri_ok(G), sg_ok(G), colour_ok(G), phenomenon_ok(G)], candidate(G)).</td></tr>
+<tr><td>K23</td><td>A matching RI is the strongest single test.</td><td>[3]</td><td>Rule</td><td class="code">rule(r16, [candidate(G), not(missing(ri)), ri_ok(G)], candidate(G)).</td></tr>
+<tr><td>K24</td><td>Red corundum is ruby.</td><td>[1]</td><td>Rule</td><td class="code">rule(r21, [species(corundum), observed_colour(red), not(phenomenon(star))], variety(ruby)).</td></tr>
+<tr><td>K25</td><td>Blue corundum is blue sapphire.</td><td>[1]</td><td>Rule</td><td class="code">rule(r24, [species(corundum), observed_colour(blue), not(phenomenon(star))], variety(blue_sapphire)).</td></tr>
+<tr><td>K26</td><td>Non-red corundum with asterism is star sapphire.</td><td>[1]</td><td>Rule</td><td class="code">rule(r23, [species(corundum), phenomenon(star), not(observed_colour(red))], variety(star_sapphire)).</td></tr>
+<tr><td>K27</td><td>Pinkish-orange Sri Lankan corundum is traded as padparadscha.</td><td>[1]</td><td>Rule</td><td class="code">rule(r26, [species(corundum), observed_colour(orange), ...], variety(padparadscha)).</td></tr>
+<tr><td>K28</td><td>Chrysoberyl with a daylight/incandescent colour change is alexandrite.</td><td>[1]</td><td>Rule</td><td class="code">rule(r29, [species(chrysoberyl), phenomenon(colour_change)], variety(alexandrite)).</td></tr>
+<tr><td>K29</td><td>Orthoclase feldspar showing adularescence is moonstone.</td><td>[1]</td><td>Rule</td><td class="code">rule(r31, [species(feldspar), phenomenon(adularescence)], variety(moonstone)).</td></tr>
+<tr><td>K30</td><td>Orange grossular garnet is hessonite.</td><td>[1]</td><td>Rule</td><td class="code">rule(r34, [species(garnet), observed_colour(orange)], variety(hessonite)).</td></tr>
+<tr><td>K31</td><td>Curved striae in corundum prove flame-fusion synthesis; natural corundum grows in straight lines.</td><td>[1]</td><td>Rule</td><td class="code">rule(r41, [species(corundum), inclusion(curved_lines)], origin(synthetic)).</td></tr>
+<tr><td>K32</td><td>Round gas bubbles in corundum indicate a flame-fusion synthetic.</td><td>[1]</td><td>Rule</td><td class="code">rule(r42, [species(corundum), inclusion(gas_bubbles)], origin(synthetic)).</td></tr>
+<tr><td>K33</td><td>Gas bubbles in an unidentified stone indicate glass or a synthetic.</td><td>[5]</td><td>Rule</td><td class="code">rule(r44, [inclusion(gas_bubbles), not(species(_)), not(imitation(_))], origin(glass_or_synthetic)).</td></tr>
+<tr><td>K34</td><td>Rutile silk is a natural inclusion in corundum.</td><td>[1]</td><td>Rule</td><td class="code">rule(r46, [species(corundum), inclusion(silk)], origin(likely_natural)).</td></tr>
+<tr><td>K35</td><td>Included mineral crystals indicate natural growth.</td><td>[4]</td><td>Rule</td><td class="code">rule(r47, [species(_), inclusion(crystals)], origin(likely_natural)).</td></tr>
+<tr><td>K36</td><td>Fingerprints are usually natural, but flux synthetics show similar features.</td><td>[4]</td><td>Rule (CF 0.6)</td><td class="code">rule(r48, [species(_), inclusion(fingerprints)], origin(likely_natural)).</td></tr>
+<tr><td>K37</td><td>Discoid fractures form when corundum is heated.</td><td>[1]</td><td>Rule</td><td class="code">rule(r49, [species(corundum), inclusion(discoid_fractures)], treatment(likely_heated)).</td></tr>
+<tr><td>K38</td><td>Natural corundum is rarely clean; a clean stone needs a laboratory test.</td><td>[5]</td><td>Rule</td><td class="code">rule(r51, [species(corundum), inclusion(none)], origin(needs_lab_test)).</td></tr>
+<tr><td>K39</td><td>Natural stones should be certified before purchase (NGJA).</td><td>[7]</td><td>Rule</td><td class="code">rule(r61, [origin(likely_natural)], advice(get_certificate)).</td></tr>
+<tr><td>K40</td><td>Treatments must be disclosed to the buyer.</td><td>[7]</td><td>Rule</td><td class="code">rule(r67, [treatment(likely_heated)], advice(disclose_heat)).</td></tr>
+<tr><td>K41</td><td>Alexandrite must be confirmed under daylight and incandescent light.</td><td>[1]</td><td>Rule</td><td class="code">rule(r68, [variety(alexandrite)], advice(check_colour_change)).</td></tr>
+</table>
+<p class="note">[Check every value and statement in Tables 2 and 3 against the cited source before submission, and adjust the source column if needed.]</p>
+
+<h2>2.4 Knowledge representation</h2>
+<p>The knowledge is represented as <b>Prolog facts plus production rules</b>. Prolog suits this because it is declarative (facts and rules are written as logical statements), has pattern matching through unification, and has built-in backtracking, which is already a form of backward chaining [12].</p>
+<p>The key design decision is that every rule is stored as a <b>data term</b>, <span class="code">rule(Id, Conditions, Conclusion)</span>, rather than as a Prolog clause. This has three benefits. The same rule base can be interpreted by both a forward chainer and a backward chainer. Every rule has an identifier that can be shown in explanations. Rules can be inspected, listed on the knowledge base page and exported for documentation. Conditions are either facts in working memory (for example <span class="code">observed_colour(red)</span>), conclusions of other rules (for example <span class="code">species(corundum)</span>), computed tests (for example <span class="code">ri_in(corundum)</span>, which compares the RI reading with the stored range), or negations <span class="code">not(C)</span> evaluated by negation as failure.</p>
+<p>Numeric ranges are kept in facts rather than inside rules: rule r1 states <span class="code">ri_in(corundum)</span> and the engine looks up <span class="code">ri_range(corundum, Min, Max)</span>. This keeps the property data in one place and lets the explanation say "RI 1.765 lies within the corundum range 1.757-1.780". Table 4 documents the predicates.</p>
+<p class="tcaption">Table 4. Main predicates of the knowledge base and working memory</p>
+<table class="data">
+<tr><th style="width:36%">Predicate</th><th>Meaning</th></tr>
+<tr><td class="code">gem(Name)</td><td>A gem species known to the system (10).</td></tr>
+<tr><td class="code">imitation_material(Name)</td><td>An imitation material (glass, cubic zirconia).</td></tr>
+<tr><td class="code">ri_range(Gem, Min, Max)</td><td>Refractive index reading range.</td></tr>
+<tr><td class="code">sg_range(Gem, Min, Max)</td><td>Specific gravity range.</td></tr>
+<tr><td class="code">optic(Gem, Type)</td><td>Optic character: isotropic, uniaxial or biaxial.</td></tr>
+<tr><td class="code">hardness(Gem, H), birefringence(Gem, B)</td><td>Mohs hardness and birefringence (information only).</td></tr>
+<tr><td class="code">colour(Gem, C), typical_colour(Gem, C)</td><td>Possible colours; colours most common in the trade.</td></tr>
+<tr><td class="code">phenomenon(Gem, P)</td><td>Optical phenomena the species can show.</td></tr>
+<tr><td class="code">inclusion_type(I, Description)</td><td>Inclusion types the user can report.</td></tr>
+<tr><td class="code">rule(Id, Conditions, Conclusion)</td><td>Production rule (62).</td></tr>
+<tr><td class="code">rule_cf(Id, CF)</td><td>Certainty factor of a rule.</td></tr>
+<tr><td class="code">rule_info(Id, Text, Source), source(Id, Citation)</td><td>Justification and literature source of each rule.</td></tr>
+<tr><td class="code">advice_text(Key, Text)</td><td>Wording of each recommendation.</td></tr>
+<tr><td class="code">fact(F)</td><td>Working memory: observed and derived facts of the current case (dynamic, thread-local).</td></tr>
+<tr><td class="code">fired(Id, Conds, Concl)</td><td>Log of fired rules, used for the How explanation.</td></tr>
+<tr><td class="code">cf(F, CF), fired_cf/6</td><td>Certainty of each derived fact and of each rule firing.</td></tr>
+</table>
+<p>The rules are grouped into four layers (Figure 2). Layer 1 identifies the species from the three core measurements, detects imitations, and, when measurements are missing, produces ranked candidates. Layer 2 names the variety. Layer 3 judges origin and treatment from inclusions. Layer 4 turns conclusions into advice. Because each layer uses the conclusions of the one above as conditions, a single identification typically chains three or four rules.</p>
+<p class="fig"><img src="{{IMG}}/fig_layers.png" width="580"></p>
+<p class="caption">Figure 2. Rule layers and how conclusions chain between them</p>
+<p>The following excerpt shows representative rules from each layer:</p>
+<pre>% Layer 1: species
+rule(r1,  [optic(uniaxial), ri_in(corundum), sg_in(corundum)], species(corundum)).
+% Layer 2: variety
+rule(r24, [species(corundum), observed_colour(blue), not(phenomenon(star))],
+          variety(blue_sapphire)).
+% Layer 3: origin
+rule(r46, [species(corundum), inclusion(silk)], origin(likely_natural)).
+% Layer 4: recommendation
+rule(r61, [origin(likely_natural)], advice(get_certificate)).</pre>
+<p>Alternative representations were considered. A <b>decision tree</b> would force a fixed order of questions and could not use whatever subset of data the user has. <b>Frames</b> would describe each gem well but do not naturally express the heuristic IF-THEN knowledge about inclusions and origin. Production rules express both kinds of knowledge, support both chaining directions and give natural explanations, so they were chosen.</p>
+
+<h2>2.5 Representing uncertainty: certainty factors</h2>
+<p>Gem identification is rarely certain: ranges of different species overlap slightly, colour names are judged by eye, and some inclusions occur in both natural and synthetic stones. Following MYCIN [9], each rule has a certainty factor between 0 (no belief) and 1 (certain), stored as <span class="code">rule_cf(Id, CF)</span>. The certainty of a conclusion is the rule's certainty multiplied by that of its weakest condition:</p>
+<p class="eq">CF(conclusion) = CF(rule) &#215; min( CF(condition<sub>1</sub>), ..., CF(condition<sub>n</sub>) )</p>
+<p>User inputs have CF 1.0. A reading inside a gem's published range has CF 1.0, while a reading that fits only because of the measurement tolerance has CF 0.7. When a second rule supports a fact that is already believed, the two certainties are combined:</p>
+<p class="eq">CF<sub>combined</sub> = CF<sub>1</sub> + CF<sub>2</sub> &#215; (1 - CF<sub>1</sub>)</p>
+<p>Table 5 summarises the values chosen for each rule group; individual values are listed in Appendix A.</p>
+<p class="tcaption">Table 5. Certainty factor ranges by rule group</p>
+{{t_cf}}
+<p>The values encode the knowledge engineer's judgement of how conclusive each piece of evidence is. Species rules are high (0.90-0.95) because three independent measurements agree, but not 1.0 because ranges can overlap. Colour-based varieties are lower where the colour boundary is subjective (padparadscha 0.70). Origin rules range from 0.95 for curved striae, which the literature treats as diagnostic of flame-fusion synthesis [1], down to 0.60 for fingerprints, which can also occur in flux-grown synthetics [4]. The partial-match evidence rules are deliberately weak (0.15-0.50) so that incomplete data never produces a falsely confident answer.</p>
+<p class="note">[Be ready to justify these values in the viva; adjust them if your own reading of the sources suggests different weights.]</p>
+
+<!-- ================================================================== -->
+<h1>3. System Design and Implementation</h1>
+
+<h2>3.1 Architecture</h2>
+<p>The system follows the classic expert system architecture (Figure 3). The knowledge base (knowledge_base.pl) contains only domain knowledge and no reasoning code. The inference engine (engine.pl) contains only domain-independent reasoning and explanation code. Adding a new gem therefore means adding facts and rules; no engine code changes. Working memory is declared <span class="code">thread_local</span>, so each web request, which runs in its own thread, has a private copy and several users cannot interfere with each other.</p>
+<p class="fig"><img src="{{IMG}}/fig_arch.png" width="600"></p>
+<p class="caption">Figure 3. System architecture</p>
+<p class="tcaption">Table 6. Source files</p>
+<table class="data">
+<tr><th style="width:22%">File</th><th>Responsibility</th></tr>
+<tr><td class="code">knowledge_base.pl</td><td>Facts, 62 production rules, certainty factors, justifications and sources.</td></tr>
+<tr><td class="code">engine.pl</td><td>Working memory, forward chaining, backward chaining meta-interpreter, consultation, certainty factors, How/Why/Why-not explanations.</td></tr>
+<tr><td class="code">diagrams.pl</td><td>Generates the forward-chaining flow diagram and the backward-chaining goal tree as SVG.</td></tr>
+<tr><td class="code">query_parser.pl</td><td>DCG that parses plain-English questions.</td></tr>
+<tr><td class="code">ui.pl, examples.pl</td><td>Web interface (SWI-Prolog HTTP server), example stones and gem pictures.</td></tr>
+<tr><td class="code">console.pl</td><td>Console interface.</td></tr>
+<tr><td class="code">tests.pl</td><td>41 automated tests (plunit).</td></tr>
+<tr><td class="code">main.pl</td><td>Loads all modules.</td></tr>
+</table>
+
+<h2>3.2 Forward chaining (Identify mode)</h2>
+<p>In Identify mode the user's observations are asserted into working memory and the engine runs the recognise-act cycle until it reaches a fixed point:</p>
+<pre>forward_chain :-
+    (   select_rule(Id, Conds, Concl)     % recognise
+    ->  fire(Id, Conds, Concl),           % act
+        forward_chain                     % next cycle
+    ;   true                              % no rule can fire: stop
+    ).
+
+select_rule(Id, Conds, Concl) :-
+    rule(Id, Conds, Concl),               % candidate rule, in knowledge-base order
+    all_true(Conds),                      % every condition holds in working memory
+    ground(Concl),
+    \+ fired(Id, _, Concl).               % refractoriness</pre>
+<p><b>Conflict resolution</b> is by rule order: in each cycle the first applicable rule in the knowledge base fires. Because the rules are ordered by layer, all species rules fire before variety rules, which fire before origin and advice rules. This ordering is what makes the negative conditions safe: for example, rule r11 (glass) requires <span class="code">not(species(_))</span>, and by the time it is considered every species rule has already had the chance to fire. <b>Refractoriness</b> prevents a rule from firing twice for the same conclusion; a different rule may still support an existing fact, in which case its certainty is combined into that fact. <span class="code">fire/3</span> asserts the conclusion, records the firing in <span class="code">fired/3</span> for the explanation facility, and stores the certainty calculation in <span class="code">fired_cf/6</span>.</p>
+<p>For the input RI 1.765, SG 4.00, uniaxial, blue, silk, the engine fires r1 (species corundum), r24 (blue sapphire), r46 (likely natural) and r61 (certificate advice), then stops because no further rule can add a new fact.</p>
+
+<h2>3.3 Backward chaining (Verify mode)</h2>
+<p>In Verify mode the user asks whether the stone is a particular gem, for example "is it a ruby?". The goal <span class="code">variety(ruby)</span> is proved by a <b>meta-interpreter</b>, a Prolog program that interprets the rule base and builds a proof tree as it goes [12], [14]:</p>
+<pre>prove(not(C), negated(C))    :- !, \+ prove(C, _).          % negation as failure
+prove(C, test(C))            :- test_condition(C), !, test(C).  % computed test
+prove(C, given(C))           :- input_fact(C), !, fact(C).      % user input
+prove(C, by(Id, C, Proofs))  :-                                 % use a rule
+    rule(Id, Conds, C),
+    prove_all(Conds, Proofs).</pre>
+<p>To prove a goal the engine selects a rule whose conclusion unifies with it and recursively proves its conditions as sub-goals, backtracking to the next rule if a condition fails. The proof tree <span class="code">by(r21, variety(ruby), [by(r1, species(corundum), [...]), given(observed_colour(red)), negated(phenomenon(star))])</span> is the basis of the How explanation and the backward-chaining diagram. When the goal fails, <span class="code">why_not/3</span> examines every rule that could have concluded it, finds the <b>first failed condition</b> of each, and, if that condition is itself a derived fact, explains recursively why that sub-goal failed.</p>
+
+<h2>3.4 Interactive consultation (Consult mode)</h2>
+<p>The third mode reproduces the MYCIN-style consultation [8]. <span class="code">prove_c/3</span> is a variant of the meta-interpreter that keeps a <b>stack of the rules being tried</b>. When a condition needs a property the user has not yet supplied, it throws <span class="code">ask(Property, Stack)</span>:</p>
+<pre>ensure_known(Stack, K) :-
+    input_key(K, F),
+    (   fact(F)        -> true              % already answered
+    ;   unknown_key(K) -> true              % user said "don't know"
+    ;   throw(ask(K, Stack))                % ask the user now
+    ).</pre>
+<p>The interface asks the question and restarts the consultation with the new answer. Questions are therefore asked only when, and only if, a rule being tested needs them. When the goal is "find the species", backward chaining naturally performs <b>hypothesise-and-test</b>: it tries r1 (is it corundum?), asks for the optic character, and if the answer rules corundum out it abandons that hypothesis and moves on to r2 (is it spinel?) without asking anything about corundum again. The stack gives the answer to "Why are you asking this?" (Section 4.3).</p>
+
+<h2>3.5 Certainty factors and ranked candidates</h2>
+<p>When RI, SG or optic character is missing, no species rule can fire. Rule r14 then makes every gem that is <i>consistent</i> with all supplied properties a candidate with a low base certainty (0.20), and evidence rules r15-r19 add certainty for each supplied property that positively matches. For a red, singly refractive stone the calculation for spinel is:</p>
+<pre>r14  consistent with all inputs              CF = 0.20
+r15  optic character matches   (rule 0.30)   CF = 0.20 + 0.30 x (1 - 0.20) = 0.44
+r19  red is a typical colour   (rule 0.15)   CF = 0.44 + 0.15 x (1 - 0.44) = 0.524</pre>
+<p>Garnet receives the same evidence, so the system ranks "Spinel 52%, Garnet 52%". This tie is honest: these observations genuinely cannot separate the two, and the system advises measuring RI and SG. With uniaxial and blue it ranks corundum, zircon and beryl (52%) above tourmaline (44%), because blue is not a typical tourmaline colour. An evidence rule's own conclusion is excluded from its weakest-condition calculation, since a belief is not evidence for itself.</p>
+
+<h2>3.6 Natural-language interface</h2>
+<p>Users can type a question such as "Is my stone a sapphire if the RI is 1.765 and it is blue?". The question is tokenised and parsed by a Definite Clause Grammar [15] in query_parser.pl. The grammar recognises goal phrases ("is my stone a", "could it be"), property phrases ("RI is 1.765", "singly refractive", "curved growth lines") and gem names, and skips words it does not know, so word order is flexible:</p>
+<pre>items([I|Is])       --> item(I), !, items(Is).
+items([skip(W)|Is]) --> [W], !, items(Is).        % unknown word: skip it
+items([])           --> [].
+
+item(goal(T))  --> goal_phrase(T).
+item(fact(F))  --> fact_phrase(F).
+
+goal_phrase(T) --> [is], stone_ref, article, target(T).
+fact_phrase(ri(N)) --> ri_word, link, number(N).</pre>
+<p>The example question is parsed as the goal <span class="code">verify(blue_sapphire)</span> with facts <span class="code">[ri(1.765), observed_colour(blue)]</span> and answered by backward chaining. Gem names are matched longest first, so "star sapphire" is not mistaken for "sapphire".</p>
+
+<h2>3.7 User interface</h2>
+<p>The main interface is a web application served by SWI-Prolog's built-in HTTP library, so nothing beyond SWI-Prolog needs to be installed. The home page introduces the system, explains the two chaining methods in plain terms, and provides a form in which each field explains what the property means and how to measure it (Figures 4 and 5). Result pages present the conclusion, certainty and origin as badges, the recommendation, a reasoning diagram and the plain-language reasoning steps (Figure 6). A menu-driven console interface provides the same functions as a backup. Full instructions are in the separate User Manual.</p>
+<p class="fig"><img src="{{IMG}}/home_hero.png" width="560"></p>
+<p class="caption">Figure 4. Home page introducing the system, with the plain-English question box</p>
+<p class="fig"><img src="{{IMG}}/home_form.png" width="520"></p>
+<p class="caption">Figure 5. Input form with an explanation of each property and the three reasoning modes</p>
+<p class="fig"><img src="{{IMG}}/ident_top.png" width="470"></p>
+<p class="caption">Figure 6. Identification result for a natural blue sapphire</p>
+
+<h2>3.8 Logic programming concepts used</h2>
+<p class="tcaption">Table 7. Where the system uses core Prolog concepts</p>
+<table class="data">
+<tr><th style="width:24%">Concept</th><th>Where and how it is used</th></tr>
+<tr><td>Unification</td><td>Matching rule conclusions to goals in <span class="code">prove/2</span> (engine.pl, line 347); a rule with variables, e.g. r14 <span class="code">candidate(G)</span>, is instantiated once per matching gem.</td></tr>
+<tr><td>Backtracking</td><td><span class="code">select_rule/3</span> (line 164) backtracks through rules and variable bindings until all conditions hold; <span class="code">prove/2</span> backtracks to the next rule when a sub-goal fails.</td></tr>
+<tr><td>Recursion</td><td><span class="code">forward_chain/0</span> (line 155) recurses once per cycle; <span class="code">prove_all/2</span>, <span class="code">why_not/3</span> (line 359) and the DCG <span class="code">items//1</span> recurse over lists and trees.</td></tr>
+<tr><td>Negation as failure</td><td><span class="code">test(not(C)) :- \+ holds(C)</span> (line 107) and <span class="code">prove(not(C), ...)</span> (line 344) implement conditions such as <span class="code">not(phenomenon(star))</span>.</td></tr>
+<tr><td>Dynamic database</td><td>Working memory <span class="code">fact/1</span>, <span class="code">fired/3</span>, <span class="code">cf/2</span> is changed with <span class="code">assertz/retract</span> in <span class="code">load_inputs/1</span> (line 91) and <span class="code">fire/3</span> (line 171); declared <span class="code">thread_local</span> (lines 37-41).</td></tr>
+<tr><td>Meta-interpreter</td><td><span class="code">prove/2</span> and <span class="code">prove_c/3</span> interpret rules stored as data and build proof trees.</td></tr>
+<tr><td>Exceptions</td><td>The consultation throws <span class="code">ask(K, Stack)</span> from inside the proof (line 265) and catches it in <span class="code">consult/4</span> (line 236).</td></tr>
+<tr><td>Definite Clause Grammar</td><td>query_parser.pl, <span class="code">items//1</span> (line 58) and <span class="code">goal_phrase//1</span> (line 66).</td></tr>
+<tr><td>Higher-order predicates</td><td><span class="code">findall/3</span>, <span class="code">maplist/3</span>, <span class="code">convlist/3</span>, <span class="code">foldl/4</span> for collecting explanations and validating input.</td></tr>
+</table>
+<p class="note">[Line numbers refer to the submitted version of engine.pl and query_parser.pl; re-check them if you edit those files.]</p>
+
+<!-- ================================================================== -->
+<h1>4. Explanation Facility</h1>
+<p>The brief requires the explanation to show the chain <b>user input &#8594; facts &#8594; rules fired &#8594; reasoning &#8594; conclusion</b>. The system provides this chain at two levels of detail, for users and for examiners, and answers the three classic explanation questions: How, Why and Why not [11], [12].</p>
+
+<h2>4.1 How: the reasoning trace</h2>
+<p>The technical trace is generated from the <span class="code">fired/3</span> log. For each fired rule it lists the rule's conditions as they were satisfied, the justification and source, and the certainty calculation:</p>
+<pre>USER INPUT
+   RI = 1.765 / SG = 4.0 / Optic character = uniaxial / Colour = blue / Inclusion = silk
+FACTS (WORKING MEMORY AT START)
+   ri(1.765), sg(4.0), optic(uniaxial), observed_colour(blue), inclusion(silk)
+RULES FIRED (IN ORDER)
+   r1 -> species(corundum)
+       because: optic character is uniaxial
+                RI 1.765 lies in the corundum range 1.757-1.780 (+/-0.005)
+                SG 4.0 lies in the corundum range 3.95-4.10 (+/-0.03)
+       why: Corundum is doubly refractive (uniaxial) with RI about 1.762-1.770 and SG about 4.00. [source: gia]
+       certainty: rule CF 0.95 x weakest condition 1.00 = 0.95
+   r24 -> variety(blue_sapphire)
+       because: species(corundum) (established earlier); colour is blue; phenomenon(star) is not established
+   r46 -> origin(likely_natural)
+       because: species(corundum) (established earlier); inclusion seen: silk
+   r61 -> advice(get_certificate)
+CONCLUSION
+   Blue sapphire (Corundum) - Strong match; Origin: Likely natural
+   Recommendation: obtain an NGJA or other accredited laboratory certificate before purchase.</pre>
+<p>The same information is presented to users as numbered plain-language steps (Figure 7), for example "Its refractive index (1.765) is within the Corundum range of 1.757-1.780", each tagged with its rule, certainty and source.</p>
+<p class="fig"><img src="{{IMG}}/ident_steps.png" width="470"></p>
+<p class="caption">Figure 7. Plain-language How explanation</p>
+
+<h2>4.2 Why: explaining a question</h2>
+<p>During a consultation the user can ask why a question is being asked. The answer is built from the stack of rules being tried (Figure 8):</p>
+<pre>WHY I AM ASKING:
+  - I am trying to find out: is it Ruby?  Rule r21 says: IF Species: Corundum AND Colour: Red
+    AND NOT Effect: Star THEN Variety: Ruby.
+  - To use that rule I first need to establish: is it Corundum?  Rule r1 says: IF Optic: Uniaxial
+    AND RI in Corundum range AND SG in Corundum range THEN Species: Corundum.
+  - To test rule r1 I need to know: the optic character.</pre>
+<p class="fig"><img src="{{IMG}}/consult_q1.png" width="450"></p>
+<p class="caption">Figure 8. Consultation question with the Why explanation</p>
+
+<h2>4.3 Why not: explaining a rejected alternative</h2>
+<p>When a verification fails, the system names the failed condition and traces it back through the rules. For a red spinel (isotropic, RI 1.718, SG 3.60) checked as a ruby, it answers: <i>"No - your stone does not match Ruby. Main reason: it must be doubly refractive with one optic axis (uniaxial), but you entered singly refractive (isotropic)"</i>. It then shows that rule r21 needs corundum and rule r1 failed on the optic character (Figure 9), and adds what the data points to instead (red spinel).</p>
+<p class="fig"><img src="{{IMG}}/verify_no_whynot.png" width="470"></p>
+<p class="caption">Figure 9. Why-not explanation for a failed verification</p>
+
+<h2>4.4 Reasoning diagrams</h2>
+<p>Each result page includes a diagram generated from the actual reasoning for the user's own input, with Play, Back and Next controls that replay it one step at a time with a caption. The forward-chaining diagram (Figure 10) shows input facts at the top, each fired rule numbered in firing order, and the facts it added. The backward-chaining diagram (Figure 11) shows the goal tree: the question, the rules tried, and each condition marked as proved, failed or never checked, which makes visible that backward chaining abandons a rule at its first failed condition.</p>
+<p class="fig"><img src="{{IMG}}/ident_diagram.png" width="470"></p>
+<p class="caption">Figure 10. Forward-chaining diagram for a natural blue sapphire</p>
+<p class="fig"><img src="{{IMG}}/verify_no_diagram.png" width="470"></p>
+<p class="caption">Figure 11. Backward-chaining goal tree for "is it a ruby?" with red spinel data</p>
+
+<!-- ================================================================== -->
+<h1>5. Testing and Evaluation</h1>
+
+<h2>5.1 Test strategy</h2>
+<p>Testing was carried out at three levels: (1) documented manual test cases that exercise each type of scenario through the complete system, (2) automated unit tests with SWI-Prolog's plunit library that are re-run after every change, and (3) interface testing of every web page, including invalid input, in a browser. The 14 example stones built into the home page double as a regression set: each was run through both forward and backward chaining and produced its expected result.</p>
+
+<h2>5.2 Manual test cases</h2>
+<p>Table 8 lists the test cases with their expected and actual results. The actual output and fired rules were produced by running the system on each input.</p>
+<p class="tcaption">Table 8. Manual test cases</p>
+<table class="datasm">
+<tr><th>TC</th><th style="width:13%">Scenario</th><th style="width:19%">Input</th><th style="width:18%">Expected output</th><th style="width:25%">Actual output</th><th>Rules fired</th><th>Result</th></tr>
+<tr><td>1</td><td>Natural blue sapphire</td><td>RI 1.765, SG 4.00, uniaxial, blue, silk</td><td>Blue sapphire, likely natural, certificate advice</td><td>Blue sapphire (90%); origin: Likely natural</td><td>r1, r24, r46, r61</td><td>Pass</td></tr>
+<tr><td>2</td><td>Spinel, not garnet</td><td>RI 1.718, SG 3.60, isotropic, red</td><td>Red spinel; garnet rejected</td><td>Red spinel (81%); origin: not determined</td><td>r2, r37, r52, r66</td><td>Pass</td></tr>
+<tr><td>3</td><td>Garnet whose SG overlaps corundum</td><td>RI 1.79, SG 4.05, isotropic</td><td>Garnet, not corundum</td><td>Garnet (90%); origin: not determined</td><td>r3, r52, r66</td><td>Pass</td></tr>
+<tr><td>4</td><td>Glass imitation</td><td>RI 1.60, isotropic, gas bubbles</td><td>Imitation: glass</td><td>Glass (85%); origin: Imitation</td><td>r11, r45, r63</td><td>Pass</td></tr>
+<tr><td>5</td><td>Synthetic ruby</td><td>RI 1.765, SG 4.00, uniaxial, red, curved lines</td><td>Ruby, synthetic</td><td>Ruby (90%); origin: Synthetic</td><td>r1, r21, r41, r62</td><td>Pass</td></tr>
+<tr><td>6</td><td>Star sapphire</td><td>RI 1.765, SG 4.00, uniaxial, blue, star</td><td>Star sapphire (not blue sapphire)</td><td>Star sapphire (90%)</td><td>r1, r23, r52, r66</td><td>Pass</td></tr>
+<tr><td>7</td><td>Missing RI and SG</td><td>isotropic, red</td><td>Ranked candidates, measure more</td><td>Ranked: Spinel 52%, Garnet 52%</td><td>r14, r15, r19, r70</td><td>Pass</td></tr>
+<tr><td>8</td><td>No match</td><td>RI 1.40, SG 1.50, uniaxial</td><td>Unknown, laboratory test advised</td><td>We could not identify this stone</td><td>r72</td><td>Pass</td></tr>
+<tr><td>9</td><td>Verify - true</td><td>"Is it ruby?" with ruby data</td><td>Yes, with proof tree</td><td>YES (90%) with proof tree</td><td>r21, r1</td><td>Pass</td></tr>
+<tr><td>10</td><td>Verify - false</td><td>"Is it spinel?" with sapphire data</td><td>No, names failed condition</td><td>NO - must be singly refractive (isotropic), but you entered uniaxial</td><td>r2 (failed)</td><td>Pass</td></tr>
+<tr><td>11</td><td>Alexandrite</td><td>RI 1.748, SG 3.73, biaxial, green, colour change</td><td>Alexandrite, confirm-colour-change advice</td><td>Alexandrite (86%)</td><td>r4, r29, r52, r66, r68</td><td>Pass</td></tr>
+<tr><td>12</td><td>Moonstone</td><td>RI 1.52, SG 2.57, biaxial, colourless, adularescence</td><td>Moonstone</td><td>Moonstone (86%)</td><td>r9, r31, r52, r66</td><td>Pass</td></tr>
+<tr><td>13</td><td>Cubic zirconia</td><td>SG 5.80, isotropic, colourless</td><td>Imitation: cubic zirconia</td><td>Cubic zirconia (95%); origin: Imitation</td><td>r13, r45, r63</td><td>Pass</td></tr>
+<tr><td>14</td><td>Heat-treated sapphire</td><td>RI 1.764, SG 4.00, uniaxial, blue, discoid fractures</td><td>Blue sapphire, natural, heated, disclosure advice</td><td>Blue sapphire (90%); Likely natural</td><td>r1, r24, r49, r50, r61, r67</td><td>Pass</td></tr>
+<tr><td>15</td><td>Ambiguous spinel/garnet</td><td>RI 1.733, SG 3.62, isotropic</td><td>Both species, re-measure advice</td><td>Ranked: Spinel 90%, Garnet 90%</td><td>r2, r3, r52, r66, r71</td><td>Pass</td></tr>
+<tr><td>16</td><td>Edge-of-range reading</td><td>RI 1.783 (inside tolerance only), SG 4.00, uniaxial, blue</td><td>Blue sapphire with reduced certainty</td><td>Blue sapphire (63%)</td><td>r1, r24, r52, r66</td><td>Pass</td></tr>
+<tr><td>17</td><td>Consultation stops early</td><td>Goal ruby; answer optic = isotropic</td><td>No, without asking RI, SG or colour</td><td>Answer NO after 1 question; RI, SG, colour never asked</td><td>r21, r1 (failed)</td><td>Pass</td></tr>
+<tr><td>18</td><td>Plain-English question</td><td>"Is my stone a sapphire if the RI is 1.765 and it is blue?"</td><td>Goal blue sapphire, facts RI and colour</td><td>Parsed as verify(blue_sapphire) with [ri(1.765), observed_colour(blue)]</td><td>-</td><td>Pass</td></tr>
+</table>
+
+<h2>5.3 Automated tests</h2>
+<p>The plunit suite in tests.pl contains 41 tests in five units (Table 9). All 41 pass (Appendix B). The suite is run with <span class="code">run_tests.</span></p>
+<p class="tcaption">Table 9. Automated test suites</p>
+<table class="data">
+<tr><th>Unit</th><th>Tests</th><th>What is checked</th></tr>
+<tr><td>identify_forward_chaining</td><td>18</td><td>Species, varieties, imitations, origin, treatment, partial data, ambiguity, no match, refractoriness, explanation generation.</td></tr>
+<tr><td>verify_backward_chaining</td><td>7</td><td>Proof trees, failed goals, nested why-not reasons, plain-language explanations.</td></tr>
+<tr><td>certainty_factors</td><td>5</td><td>Rule CF propagation, tolerance penalty, MYCIN combination, ranking, proof certainty.</td></tr>
+<tr><td>consultation_why</td><td>6</td><td>Question order, early stopping, "don't know" answers, hypothesise-and-test, Why text.</td></tr>
+<tr><td>natural_language_dcg</td><td>5</td><td>Verify and identify questions, longest-name matching, multi-word phrases, unknown words.</td></tr>
+</table>
+
+<h2>5.4 Defects found and fixed</h2>
+<p>Testing found several real defects, which were fixed and, where possible, covered by a regression test (Table 10).</p>
+<p class="tcaption">Table 10. Defects found during testing</p>
+<table class="data">
+<tr><th style="width:30%">Defect</th><th style="width:35%">Cause</th><th>Fix</th></tr>
+<tr><td>Evidence rules added almost no certainty (0.3 x 0.2 = 0.06)</td><td>An evidence rule's own conclusion (the candidate) was counted as its weakest condition.</td><td>Exclude the conclusion from its own weakest-condition calculation.</td></tr>
+<tr><td>Consultation page returned "Internal server error"</td><td>A nested list of hidden form fields was misread by the HTML generator as attributes.</td><td>Flatten the element list; the same fix restored a missing default option in two drop-down menus.</td></tr>
+<tr><td>Navigation bar and example gallery collapsed in the browser</td><td>Two CSS class names were shared by unrelated elements.</td><td>Rename the conflicting classes.</td></tr>
+<tr><td>Console menu looped forever when input ended</td><td>End of input was treated as menu choice 1.</td><td>Treat end of input as "Quit" in menus.</td></tr>
+<tr><td>Diagram coordinates were written as unevaluated expressions</td><td>Arithmetic was passed to format/2 without evaluation.</td><td>Evaluate with is/2 before formatting.</td></tr>
+</table>
+
+<h2>5.5 Evaluation against the objectives</h2>
+<p class="tcaption">Table 11. Evaluation against the objectives</p>
+<table class="data">
+<tr><th style="width:32%">Objective</th><th style="width:12%">Status</th><th>Evidence</th></tr>
+<tr><td>O1 Knowledge acquisition documented</td><td>Met</td><td>Table 3; rule_info/3 stores the source of every rule; Appendix A.</td></tr>
+<tr><td>O2 At least 20 facts and 20 rules</td><td>Exceeded</td><td>297 facts, 62 rules in four chained layers.</td></tr>
+<tr><td>O3 Forward and backward chaining</td><td>Met</td><td>Identify, Verify and Consult modes over one rule base; TC1-17.</td></tr>
+<tr><td>O4 Explanation facility</td><td>Met</td><td>How, Why and Why-not at technical and plain-language levels; diagrams.</td></tr>
+<tr><td>O5 Incomplete data and confidence</td><td>Met</td><td>Certainty factors, ranked candidates; TC7, 15, 16.</td></tr>
+<tr><td>O6 User-friendly interface</td><td>Met</td><td>Web and console interfaces, plain-English questions, example stones.</td></tr>
+<tr><td>O7 Testing and user manual</td><td>Met</td><td>18 manual and 41 automated tests; separate User Manual.</td></tr>
+</table>
+<p>The main gap in the evaluation is that all tests use textbook values. The system has not yet been validated against independently certified stones or laboratory reports. Such a validation study, reporting an accuracy table with analysis of any failures, is the most important next step (Section 7.4).</p>
+
+<!-- ================================================================== -->
+<h1>6. User Manual</h1>
+<p>The installation and operating instructions are provided as a separate document, <i>Gemstone Identification Assistant - User Manual</i>. It covers the required software, installation of SWI-Prolog, starting the web and console interfaces, the meaning of each input field and where to obtain it, worked examples with screenshots, the three reasoning modes, troubleshooting, and how to run the automated tests.</p>
+
+<!-- ================================================================== -->
+<h1>7. Discussion</h1>
+
+<h2>7.1 Modelling expert cognition</h2>
+<p>The three reasoning modes correspond to recognisable patterns of expert thinking. When a gemmologist first receives an unknown stone, they gather observations and let the evidence suggest conclusions. This is data-driven reasoning, modelled by forward chaining. Once a hypothesis forms ("this could be a sapphire"), expert reasoning becomes <b>hypothesise-and-test</b>: the expert selects the tests that would confirm or rule out that hypothesis and abandons it as soon as a test contradicts it. Studies of expert diagnostic reasoning describe the same hypothetico-deductive pattern [18]. The consultation mode models it directly. It forms a hypothesis from the rule order, asks only for the evidence that hypothesis needs, and moves to the next hypothesis on failure. Test case 17 shows the effect: an isotropic reading rules out ruby after a single question.</p>
+<p>Human experts also reason with uncertain evidence and weigh several weak clues. The certainty factors model this: no single colour observation identifies a gem, but several weak matches together raise one candidate above another. Finally, experts can justify their conclusions. The explanation facility gives the system the same ability to justify, and its explanations cite the source of each piece of knowledge.</p>
+
+<h2>7.2 Symbolic AI compared with machine learning</h2>
+<p>An alternative would be to train a machine-learning model, for example a neural network that classifies gem photographs [17]. Such models can be very accurate on images and can learn patterns no expert has written down. They are, however, largely "black boxes": they cannot say <i>why</i> a stone was classified as a sapphire, they need large labelled data sets that do not exist for Sri Lankan stones and their treatments, and a photograph cannot capture RI, SG or optic character. This rule-based system is transparent. Every conclusion can be traced to named rules and published sources, and it is easy to correct when an expert disagrees. Rudin [19] argues that for high-stakes decisions, interpretable models should be preferred to explaining black boxes after the fact. A buyer deciding whether to spend a large sum on a stone is making exactly that kind of decision, which is why explainability was treated as a core requirement. The weakness of the symbolic approach is the knowledge acquisition bottleneck: every rule must be written and justified by hand, and the system knows nothing outside its rules. A hybrid, in which image recognition proposes candidates that the rule base then checks and explains, is a promising direction.</p>
+
+<h2>7.3 Limitations</h2>
+<ul>
+<li><b>No validation on real certified stones.</b> Accuracy on real-world readings, with their measurement noise, is unknown.</li>
+<li><b>Over-the-limit readings.</b> Standard refractometers cannot read high zircon or cubic zirconia; the user cannot yet enter "over the limit", so these rely on SG.</li>
+<li><b>Unused properties.</b> Birefringence is stored but not used as an input; pleochroism, fluorescence and absorption spectra, which gemmologists use to separate overlapping species, are not modelled.</li>
+<li><b>Treatments.</b> Only heat treatment is indicated, and only from one visible feature. Glass-filled ruby, a significant fraud, is not covered.</li>
+<li><b>One inclusion per stone.</b> The user can report only the dominant inclusion type.</li>
+<li><b>Subjective certainty factors.</b> The CF values are the knowledge engineer's judgement and have not been calibrated against data. MYCIN-style certainty factors also lack a full probabilistic foundation [17].</li>
+<li><b>Rule-order dependence.</b> Rules with negative conditions rely on the layer order for correct conflict resolution. This is documented but would need care if rules were added carelessly.</li>
+<li><b>Consultation diagram.</b> For "find the species", the diagram shows the successful proof but not the hypotheses rejected before it, although the question sequence and the Why explanations do show them.</li>
+</ul>
+
+<h2>7.4 Future work</h2>
+<ul>
+<li>Validate on 15-20 certified stones or laboratory reports and report accuracy with an error analysis.</li>
+<li>Add an "over the limit" RI option, birefringence input, and rules for pleochroism, fluorescence and glass-filled ruby.</li>
+<li>Allow several inclusion types per stone, combining their evidence with certainty factors.</li>
+<li>Add a knowledge base consistency checker (conflicting, redundant or unreachable rules) and a knowledge-editing page for experts.</li>
+<li>Explore a hybrid system in which image recognition proposes candidates that the rule base verifies and explains.</li>
+</ul>
+
+<!-- ================================================================== -->
+<h1>8. Conclusion</h1>
+<p>This project designed and implemented a rule-based expert system that identifies common Sri Lankan gemstones, detects synthetics and imitations, and explains its reasoning. Knowledge from recognised gemmological sources was systematically acquired, documented and represented as 297 facts and 62 production rules in four chained layers, with a certainty factor and a literature source for every rule. One rule base supports three reasoning modes: forward chaining for identification, backward chaining for verifying a claim, and an interactive consultation that asks only for the facts it needs. A full How, Why and Why-not explanation facility, reasoning diagrams, a plain-English question interface and a web interface make the reasoning transparent to non-experts. All 18 documented test cases and 41 automated tests pass. The system meets its objectives as a tool for a first opinion. Its main limitations, the absence of real-world validation and several unmodelled gemmological properties, define clear next steps. Above all, the project shows why a transparent, explainable system is appropriate when a person's money depends on its answer.</p>
+
+<!-- ================================================================== -->
+<br clear="all" style="page-break-before:always">
+<h1>References</h1>
+<p class="note">[Check each reference, especially edition numbers and years, against the copy you actually used.]</p>
+<p class="ref">[1] Gemological Institute of America, "GIA Gem Encyclopedia." [Online]. Available: https://www.gia.edu/gem-encyclopedia</p>
+<p class="ref">[2] R. Webster, <i>Gems: Their Sources, Descriptions and Identification</i>, 5th ed., P. G. Read, Ed. Oxford, U.K.: Butterworth-Heinemann, 1994.</p>
+<p class="ref">[3] P. G. Read, <i>Gemmology</i>, 3rd ed. Oxford, U.K.: Elsevier Butterworth-Heinemann, 2005.</p>
+<p class="ref">[4] A. Matlins and A. C. Bonanno, <i>Gem Identification Made Easy</i>, 5th ed. Woodstock, VT, USA: GemStone Press, 2013.</p>
+<p class="ref">[5] International Gem Society, "Gem identification articles." [Online]. Available: https://www.gemsociety.org</p>
+<p class="ref">[6] Gemdat.org, "Gemstone database." [Online]. Available: https://www.gemdat.org</p>
+<p class="ref">[7] National Gem and Jewellery Authority of Sri Lanka. [Online]. Available: https://www.ngja.gov.lk</p>
+<p class="ref">[8] E. H. Shortliffe, <i>Computer-Based Medical Consultations: MYCIN</i>. New York, NY, USA: Elsevier, 1976.</p>
+<p class="ref">[9] B. G. Buchanan and E. H. Shortliffe, Eds., <i>Rule-Based Expert Systems: The MYCIN Experiments of the Stanford Heuristic Programming Project</i>. Reading, MA, USA: Addison-Wesley, 1984.</p>
+<p class="ref">[10] P. Jackson, <i>Introduction to Expert Systems</i>, 3rd ed. Harlow, U.K.: Addison-Wesley, 1999.</p>
+<p class="ref">[11] J. C. Giarratano and G. D. Riley, <i>Expert Systems: Principles and Programming</i>, 4th ed. Boston, MA, USA: Thomson Course Technology, 2005.</p>
+<p class="ref">[12] I. Bratko, <i>Prolog Programming for Artificial Intelligence</i>, 4th ed. Harlow, U.K.: Pearson Education, 2012.</p>
+<p class="ref">[13] D. Merritt, <i>Building Expert Systems in Prolog</i>. New York, NY, USA: Springer-Verlag, 1989.</p>
+<p class="ref">[14] L. Sterling and E. Shapiro, <i>The Art of Prolog</i>, 2nd ed. Cambridge, MA, USA: MIT Press, 1994.</p>
+<p class="ref">[15] F. C. N. Pereira and D. H. D. Warren, "Definite clause grammars for language analysis - A survey of the formalism and a comparison with augmented transition networks," <i>Artificial Intelligence</i>, vol. 13, no. 3, pp. 231-278, 1980.</p>
+<p class="ref">[16] J. Wielemaker, T. Schrijvers, M. Triska, and T. Lager, "SWI-Prolog," <i>Theory and Practice of Logic Programming</i>, vol. 12, no. 1-2, pp. 67-96, 2012.</p>
+<p class="ref">[17] S. Russell and P. Norvig, <i>Artificial Intelligence: A Modern Approach</i>, 4th ed. Hoboken, NJ, USA: Pearson, 2020.</p>
+<p class="ref">[18] A. S. Elstein, L. S. Shulman, and S. A. Sprafka, <i>Medical Problem Solving: An Analysis of Clinical Reasoning</i>. Cambridge, MA, USA: Harvard University Press, 1978.</p>
+<p class="ref">[19] C. Rudin, "Stop explaining black box machine learning models for high stakes decisions and use interpretable models instead," <i>Nature Machine Intelligence</i>, vol. 1, no. 5, pp. 206-215, 2019.</p>
+<p class="ref">[20] W. R. Swartout, "XPLAIN: A system for creating and explaining expert consulting programs," <i>Artificial Intelligence</i>, vol. 21, no. 3, pp. 285-325, 1983.</p>
+
+<!-- ================================================================== -->
+<br clear="all" style="page-break-before:always">
+<h1>Appendix A. Complete Rule Base</h1>
+<p>Generated from knowledge_base.pl. Source keys: gia [1], webster [2], read [3], matlins [4], igs [5], gemdat [6], ngja [7], design = knowledge engineer decision.</p>
+{{t_rules}}
+
+<br clear="all" style="page-break-before:always">
+<h1>Appendix B. Automated Test Output</h1>
+<pre>{{tests_out}}</pre>
+
+<h1>Appendix C. Console Consultation Transcript</h1>
+<p>Consult mode, goal "find the species". The user types <i>why</i> at the first question, then answers isotropic, RI 1.718 and SG 3.60.</p>
+<pre>{{console}}</pre>
+
+</body></html>
