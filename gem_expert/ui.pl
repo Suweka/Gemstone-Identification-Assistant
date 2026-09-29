@@ -1168,12 +1168,25 @@ topbar -->
       div(class('wrap bar'),
         [ a([class(brand), href('/')], [ span(class(logo), \[Logo]),
                                          span([b('GemID'), ' Assistant']) ]),
-          nav([ a(href('/#how'), 'How it works'),
+          % menu button: only visible on small screens (phones)
+          button([type(button), id('menu-btn'), class('menu-btn'),
+                  'aria-label'('Open menu'), 'aria-expanded'(false), 'aria-controls'('main-nav')],
+                 [span(''), span(''), span('')]),
+          nav(id('main-nav'),
+              [ a(href('/#how'), 'How it works'),
                 a(href('/#identify'), 'Identify'),
                 a(href('/consult?goal=any_species'), 'Step by step'),
                 a(href('/#examples'), 'Examples'),
                 a(href('/#glossary'), 'Glossary'),
-                a(href('/rules'), 'Knowledge base') ])
+                a(href('/rules'), 'Knowledge base') ]),
+          script(\[
+'(function(){var b=document.getElementById("menu-btn"),n=document.getElementById("main-nav");',
+'function set(o){n.classList.toggle("open",o);b.setAttribute("aria-expanded",o);',
+'b.setAttribute("aria-label",o?"Close menu":"Open menu");}',
+'b.addEventListener("click",function(){set(!n.classList.contains("open"));});',
+'n.querySelectorAll("a").forEach(function(a){a.addEventListener("click",function(){set(false);});});',
+'document.addEventListener("keydown",function(e){if(e.key==="Escape")set(false);});})();'
+          ])
         ]))).
 
 footer -->
@@ -1235,6 +1248,9 @@ a{color:var(--primary)}
 .topbar nav{display:flex;gap:4px;flex-wrap:wrap}
 .topbar nav a{color:#cfd3ff;text-decoration:none;font-size:.9rem;padding:6px 10px;border-radius:6px}
 .topbar nav a:hover{background:rgba(255,255,255,.1);color:#fff}
+.menu-btn{display:none;flex-direction:column;justify-content:center;gap:5px;width:44px;height:44px;padding:10px;border:0;border-radius:8px;background:transparent;cursor:pointer}
+.menu-btn span{display:block;height:2px;border-radius:2px;background:#fff}
+.menu-btn:focus-visible{outline:2px solid #f5b83d}
 
 /* buttons */
 .btn{display:inline-block;border:0;border-radius:8px;padding:11px 20px;font:600 .95rem Inter,"Segoe UI",sans-serif;cursor:pointer;text-decoration:none;transition:transform .1s,box-shadow .2s,background .2s}
@@ -1449,7 +1465,8 @@ legend .num{margin:0;width:28px;height:28px;font-size:.9rem}
 .ask-box input{flex:1;padding:12px 14px;border-radius:8px;border:0;font:1rem Inter,"Segoe UI",sans-serif;min-width:0}
 .ask-box.light input{border:1.5px solid #cfd4e2}
 .ask-examples{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:26px;font-size:.82rem;color:#b9bce6}
-.ask-chip{color:#e4e6ff;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:3px 10px;text-decoration:none}
+.hero-grid > *{min-width:0}
+.ask-chip{white-space:normal;overflow-wrap:anywhere;color:#e4e6ff;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:3px 10px;text-decoration:none}
 .ask-chip:hover{background:rgba(255,255,255,.2)}
 .tips .ask-chip{color:var(--primary);background:#eef0ff;border-color:#dfe3ff}
 .parsed{border-left:5px solid var(--accent)}
@@ -1500,7 +1517,11 @@ table.kb td.src{color:var(--muted);font-size:.78rem;min-width:160px}
  .hero-grid{grid-template-columns:1fr}
  .hero-art{height:220px}
  .hero-art .g1{width:130px;height:130px}
- .topbar nav a:not(:nth-child(2)){display:none}
+ .menu-btn{display:flex}
+ .topbar nav{display:none;position:absolute;top:60px;left:0;right:0;flex-direction:column;gap:0;background:#12143a;padding:6px 12px 12px;box-shadow:0 12px 24px rgba(0,0,0,.35)}
+ .topbar nav.open{display:flex}
+ .topbar nav a{padding:12px 10px;font-size:1rem;border-bottom:1px solid rgba(255,255,255,.08)}
+ .topbar nav a:last-child{border-bottom:0}
  .result-hero,.answer{flex-direction:column;text-align:center;align-items:center}
  .result-hero .sub{text-align:center}
  .badges{justify-content:center}
