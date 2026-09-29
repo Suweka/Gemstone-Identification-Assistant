@@ -319,6 +319,7 @@ fact_phrase(ri(N)) --> ri_word, link, number(N).</pre>
 
 <h2>3.7 User interface</h2>
 <p>The main interface is a web application served by SWI-Prolog's built-in HTTP library, so nothing beyond SWI-Prolog needs to be installed. The home page introduces the system, explains the two chaining methods in plain terms, and provides a form in which each field explains what the property means and how to measure it (Figures 5 and 6). Result pages present the conclusion, certainty and origin as badges, the recommendation, a reasoning diagram and the plain-language reasoning steps (Figure 7). A menu-driven console interface provides the same functions as a backup. Full instructions are in the separate User Manual.</p>
+<p><b>Online deployment.</b> Because all reasoning runs on the server and the browser only receives finished pages, users do not need Prolog installed. The system is packaged as a Docker container based on the official SWI-Prolog image and deployed on the Render cloud platform at <b>https://gemstone-identification-assistant.onrender.com</b>. A <span class="code">serve/0</span> entry point starts the server on the port supplied by the host. Working memory is thread-local, so several users can consult the system at the same time without affecting each other's results.</p>
 <p>Several features were added specifically to make the system usable by non-experts:</p>
 <ul>
 <li><b>Pictures instead of terms.</b> Colour is chosen from swatches, optical effects and inclusions from small drawings of what they look like under a loupe, and the optic character from drawings of what is seen in the polariscope and conoscope ("stays dark", "blinks light and dark", "dark cross", "curved bars"), because a beginner may not know the words "silk", "fingerprint" or "biaxial" (Figure 6).</li>
@@ -481,7 +482,7 @@ CONCLUSION
 
 <!-- ================================================================== -->
 <h1>6. User Manual</h1>
-<p>The installation and operating instructions are provided as a separate document, <i>Gemstone Identification Assistant - User Manual</i>. It covers the required software, installation of SWI-Prolog, starting the web and console interfaces, the meaning of each input field and where to obtain it, worked examples with screenshots, the three reasoning modes, troubleshooting, and how to run the automated tests.</p>
+<p>The installation and operating instructions are provided as a separate document, <i>Gemstone Identification Assistant - User Manual</i>. It describes the two ways to use the system: the online version at <b>https://gemstone-identification-assistant.onrender.com</b>, which needs only a web browser, and running it on one's own computer by downloading the project ZIP file from GitHub and starting it from the Command Prompt. It covers the required software, installation of SWI-Prolog, starting the web and console interfaces, the meaning of each input field and where to obtain it, worked examples with screenshots, the three reasoning modes, troubleshooting, and how to run the automated tests.</p>
 
 <!-- ================================================================== -->
 <h1>7. Discussion</h1>

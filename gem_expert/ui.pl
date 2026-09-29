@@ -36,8 +36,10 @@
 
 server(Port) :-
     http_server(http_dispatch, [port(Port)]),
-    format("~nWeb interface running: open http://localhost:~w in your browser.~n", [Port]),
-    format("Stop it with  stop_server(~w).~n~n", [Port]).
+    format("~nThe web server is running.~n"),
+    format("  -> Open your web browser and go to   http://localhost:~w~n", [Port]),
+    format("  -> Keep this window open while you use the system.~n"),
+    format("  -> To stop: type  stop_server(~w).  then  halt.~n~n", [Port]).
 
 stop_server(Port) :-
     http_stop_server(Port, []).

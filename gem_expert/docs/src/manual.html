@@ -37,6 +37,7 @@ tr{page-break-inside:avoid}
 <p class="title">CM3321 - Logic Programming and Artificial Cognitive Systems</p>
 <p class="title">Faculty of Information Technology, University of Moratuwa</p>
 <p class="title">Version 1.0 - 29 September 2026</p>
+<p class="title">Online version: https://gemstone-identification-assistant.onrender.com</p>
 
 <br clear="all" style="page-break-before:always">
 <p style="font-size:17pt;font-weight:bold;margin-bottom:8pt">Contents</p>
@@ -65,66 +66,130 @@ tr{page-break-inside:avoid}
 </table>
 <p>You can also type a question in plain English, for example <i>"Is my stone a sapphire if the RI is 1.765 and it is blue?"</i></p>
 
-<h1>2. What you need</h1>
-<p class="tcaption">Table 1. Requirements</p>
+<h1>2. Two ways to use the system</h1>
+<p>The system can be used in two ways. Both give exactly the same results.</p>
+<p class="tcaption">Table 1. Ways to use the system</p>
+<table class="data">
+<tr><th style="width:20%"></th><th style="width:40%">A. Online version (Section 3)</th><th>B. On your own computer (Section 4)</th></tr>
+<tr><td>Installation</td><td>None. Open a link in a web browser.</td><td>Install SWI-Prolog and download the project files.</td></tr>
+<tr><td>Internet</td><td>Needed.</td><td>Only for the downloads; afterwards it works offline.</td></tr>
+<tr><td>Features</td><td>Web interface: Identify, Verify, Step by step, plain-English questions, examples, knowledge base.</td><td>Everything in A, plus the console interface and the automated tests.</td></tr>
+<tr><td>Best for</td><td>Trying the system quickly, on any computer, tablet or phone.</td><td>Working offline, examining the code, running the tests.</td></tr>
+</table>
+
+<h1>3. Option A: use the online version (no installation)</h1>
+<p>The system is hosted on the internet, so nothing needs to be installed. Only a web browser is needed (Microsoft Edge, Google Chrome, Firefox or Safari, on a computer, tablet or phone).</p>
+<ol>
+<li>Open your web browser.</li>
+<li>Go to <b>https://gemstone-identification-assistant.onrender.com</b></li>
+<li>The home page appears (Figure 1). Continue from Section 5.</li>
+</ol>
+<div class="tip"><b>First visit may be slow.</b> The online version runs on a free hosting service that "sleeps" when nobody has used it for about 15 minutes. The first page can then take up to about a minute to appear while it wakes up; after that it is fast. If the page does not load, wait a moment and refresh.</div>
+<p>The online version has every feature of the web interface. The console interface (Section 16) and the automated tests (Section 17) are only available when the system runs on your own computer (Option B). Your "recent stones" list is saved only in your own browser (Section 13).</p>
+
+<h1>4. Option B: run the system on your own computer</h1>
+<h2>4.1 What you need</h2>
+<p class="tcaption">Table 2. Requirements for running the system on your computer</p>
 <table class="data">
 <tr><th style="width:28%">Item</th><th>Requirement</th></tr>
 <tr><td>Computer</td><td>Windows 10 or 11, macOS or Linux, with about 100 MB of free disk space.</td></tr>
 <tr><td>SWI-Prolog</td><td>Version 9 or later (free). The system was developed and tested with <b>SWI-Prolog 10.1.16</b> (64-bit).</td></tr>
 <tr><td>Web browser</td><td>Any modern browser: Microsoft Edge, Google Chrome, Firefox or Safari.</td></tr>
-<tr><td>Project files</td><td>The <span class="code">gem_expert</span> folder.</td></tr>
-<tr><td>Internet</td><td>Only for downloading SWI-Prolog. The system itself runs offline; without internet the page simply uses standard fonts.</td></tr>
+<tr><td>Project files</td><td>The project ZIP file from GitHub (Section 4.3).</td></tr>
+<tr><td>Internet</td><td>Only for downloading SWI-Prolog and the project. The system itself runs offline; without internet the page simply uses standard fonts.</td></tr>
 <tr><td>Gem instruments (optional)</td><td>Refractometer, hydrostatic balance, polariscope and a 10x loupe give the best results, but the system also works with only what you can see.</td></tr>
 </table>
 
-<h1>3. Installation</h1>
-<h2>3.1 Install SWI-Prolog</h2>
+<h2>4.2 Install SWI-Prolog</h2>
 <ol>
 <li>Open <b>https://www.swi-prolog.org/download/stable</b> in your browser.</li>
 <li>Download the installer for your computer. On Windows choose the <b>64-bit</b> installer (<span class="code">swipl-...-1.x64.exe</span>).</li>
 <li>Run the installer and accept the default settings.</li>
-<li><b>Windows only:</b> on the "Install Options" page select <b>"Add swipl to the system PATH for all users"</b> (or "for the current user"). This lets you start SWI-Prolog from a terminal.</li>
+<li><b>Windows only:</b> on the "Install Options" page select <b>"Add swipl to the system PATH for all users"</b> (or "for the current user"). This lets you start SWI-Prolog from the Command Prompt.</li>
 <li>Finish the installation. On macOS you can alternatively install with Homebrew (<span class="code">brew install swi-prolog</span>); on Ubuntu Linux use <span class="code">sudo apt install swi-prolog</span>.</li>
 </ol>
 
-<h2>3.2 Copy the project folder</h2>
+<h2>4.3 Download the project as a ZIP file</h2>
 <ol>
-<li>Copy or unzip the <span class="code">gem_expert</span> folder to a convenient place, for example <span class="code">Documents\gem_expert</span>.</li>
-<li>Check that the folder contains these files: <span class="code">main.pl</span>, <span class="code">knowledge_base.pl</span>, <span class="code">engine.pl</span>, <span class="code">ui.pl</span>, <span class="code">console.pl</span>, <span class="code">diagrams.pl</span>, <span class="code">examples.pl</span>, <span class="code">query_parser.pl</span>, <span class="code">tests.pl</span> and an <span class="code">images</span> folder.</li>
+<li>Open <b>https://github.com/Suweka/Gemstone-Identification-Assistant</b> in your browser.</li>
+<li>Click the green <b>Code</b> button, then <b>Download ZIP</b>. The file <span class="code">Gemstone-Identification-Assistant-main.zip</span> is saved to your Downloads folder.</li>
+<li>Open the Downloads folder, right-click the ZIP file and choose <b>Extract All...</b>, then <b>Extract</b>. (On macOS, double-click the ZIP file.)</li>
+<li>Open the extracted folder <span class="code">Gemstone-Identification-Assistant-main</span>, then the <span class="code">gem_expert</span> folder inside it. It contains <span class="code">main.pl</span>, <span class="code">knowledge_base.pl</span>, <span class="code">engine.pl</span>, <span class="code">ui.pl</span>, <span class="code">console.pl</span>, <span class="code">diagrams.pl</span>, <span class="code">examples.pl</span>, <span class="code">query_parser.pl</span>, <span class="code">tests.pl</span> and an <span class="code">images</span> folder.</li>
 </ol>
+<div class="tip">If you received the project as a ZIP file in another way (for example by e-mail or on a USB drive), extract it in the same way and open the <span class="code">gem_expert</span> folder.</div>
 
-<h2>3.3 Check the installation</h2>
-<ol>
-<li>Open a terminal: on Windows, open the <span class="code">gem_expert</span> folder in File Explorer, click the address bar, type <kbd>cmd</kbd> and press Enter. On macOS or Linux, open Terminal and use <span class="code">cd</span> to go to the folder.</li>
-<li>Type <kbd>swipl --version</kbd> and press Enter. You should see a line such as <span class="code">SWI-Prolog version 10.1.16 for x64-win64</span>.</li>
-</ol>
+<h2>4.4 Open the Command Prompt in the project folder</h2>
+<p>The system is started from a command window opened <b>inside the <span class="code">gem_expert</span> folder</b>. On Windows, use either method:</p>
+<ul>
+<li><b>From File Explorer (easiest):</b> with the <span class="code">gem_expert</span> folder open, click the address bar at the top, type <kbd>cmd</kbd> and press Enter. A Command Prompt window opens already in the right folder.</li>
+<li><b>From the Start menu:</b> press the Windows key, type <kbd>cmd</kbd> and press Enter. Then type <kbd>cd</kbd>, a space, and the folder's location, and press Enter, for example:
+<pre>cd %USERPROFILE%\Downloads\Gemstone-Identification-Assistant-main\gem_expert</pre></li>
+</ul>
+<p>On macOS or Linux, open Terminal and use <span class="code">cd</span> to go to the <span class="code">gem_expert</span> folder.</p>
+<p>To check that SWI-Prolog is installed, type <kbd>swipl --version</kbd> and press Enter. You should see a line such as <span class="code">SWI-Prolog version 10.1.16 for x64-win64</span>.</p>
 <div class="tip">If you see "'swipl' is not recognized", SWI-Prolog is not on the PATH. See Troubleshooting (Section 15).</div>
 
-<h1>4. Starting and stopping the system</h1>
-<h2>4.1 Start the web interface (recommended)</h2>
+<h2>4.5 Start the web interface</h2>
 <ol>
-<li>In the terminal, inside the <span class="code">gem_expert</span> folder, type:
+<li>In the Command Prompt, inside the <span class="code">gem_expert</span> folder, type:
 <pre>swipl main.pl</pre>
-You will see:
-<pre>=== Gemstone Identification Assistant loaded ===
-  server(8080).   start web interface, then open http://localhost:8080
-  start.          console interface
-  demo.           worked example
-  run_tests.      run automated tests
+A welcome screen explains what the system does and how to use it:
+<pre>==============================================================
+   GEMSTONE IDENTIFICATION ASSISTANT
+==============================================================
+An expert system that identifies common Sri Lankan gemstones
+from their readings (RI, SG, optic character) and what you can
+see (colour, optical effect, inclusions). It tells you whether
+a stone is natural, synthetic or an imitation - and explains why.
+
+HOW TO START
+  1. At the ?- prompt below, type   server(8080).
+     (include the full stop) and press Enter.
+  2. Open your web browser and go to   http://localhost:8080
+  3. Keep this window open while you use the system.
+
+ON THE HOME PAGE
+  - Fill in what you know under "Describe your stone".
+  - IDENTIFY A GEM:  press "Identify stone"
+      (forward chaining - works from your inputs to an answer).
+  - VERIFY A CLAIM:  choose a gem under "Check a claim" and
+      press "Verify"  (backward chaining - e.g. "is it a ruby?").
+  - STEP BY STEP:    press "Start" under "Ask me step by step"
+      (the system asks one question at a time).
+  - New to gems? Try an "Example stone" further down the page.
+
+OTHER COMMANDS (type at the ?- prompt)
+  start.               use the system here, without a browser
+  demo.                show a worked example (blue sapphire)
+  run_tests.           run the automated tests
+  stop_server(8080).   stop the web server
+  halt.                exit
 
 ?-</pre></li>
 <li>At the <span class="code">?-</span> prompt type the following, <b>including the full stop</b>, and press Enter:
 <pre>server(8080).</pre>
-The system replies <span class="code">Web interface running: open http://localhost:8080 in your browser.</span></li>
+The system replies:
+<pre>% Started server at http://localhost:8080/
+
+The web server is running.
+  -> Open your web browser and go to   http://localhost:8080
+  -> Keep this window open while you use the system.
+  -> To stop: type  stop_server(8080).  then  halt.</pre></li>
 <li>Open your web browser and go to <b>http://localhost:8080</b>. The home page appears (Figure 1).</li>
+<li>On the home page:
+<ul>
+<li>To <b>identify</b> a stone, fill in what you know under <b>Describe your stone</b> and press <b>Identify stone</b> (Section 7).</li>
+<li>To <b>check a claim</b> such as "is it a ruby?", choose the gem in <b>Check a claim</b> and press <b>Verify</b> (Section 8).</li>
+<li>To be <b>guided one question at a time</b>, press <b>Start</b> under <b>Ask me step by step</b> (Section 9).</li>
+</ul></li>
 </ol>
-<div class="tip">On Windows the first time you start the server, Windows Defender Firewall may ask whether to allow SWI-Prolog to communicate. Choose <b>Allow</b> for private networks. The system only listens on your own computer.</div>
+<div class="tip">On Windows the first time you start the server, Windows Defender Firewall may ask whether to allow SWI-Prolog to communicate. Choose <b>Allow</b> for private networks.</div>
 <div class="tip">Every Prolog command ends with a full stop. If nothing happens after pressing Enter, type <kbd>.</kbd> and press Enter again.</div>
 
-<h2>4.2 Stop the system</h2>
+<h2>4.6 Stop the system</h2>
 <ol>
-<li>In the terminal type <kbd>stop_server(8080).</kbd> to stop the web server.</li>
-<li>Type <kbd>halt.</kbd> to leave SWI-Prolog. (Closing the terminal window also stops everything.)</li>
+<li>In the Command Prompt type <kbd>stop_server(8080).</kbd> to stop the web server.</li>
+<li>Type <kbd>halt.</kbd> to leave SWI-Prolog. (Closing the Command Prompt window also stops everything.)</li>
 </ol>
 
 <h1>5. A tour of the home page</h1>
@@ -138,7 +203,7 @@ The system replies <span class="code">Web interface running: open http://localho
 <p>The form (Figure 3) has two groups of fields. <b>Every field is optional.</b> Fill in what you know and leave the rest as <i>Unknown / not checked</i>. The more you fill in, the more certain the answer. Each field shows what the property means (grey text) and how to measure it (<b>HOW</b>).</p>
 <p class="fig"><img src="{{IMG}}/home_form.png" width="520"></p>
 <p class="caption">Figure 3. The input form: instrument readings with normal ranges, and picture choices for the optic character and for what you can see</p>
-<p class="tcaption">Table 2. Input fields</p>
+<p class="tcaption">Table 3. Input fields</p>
 <table class="data">
 <tr><th style="width:17%">Field</th><th style="width:26%">What it is</th><th style="width:27%">How to obtain it</th><th>Tips</th></tr>
 <tr><td>Refractive index (RI)</td><td>How strongly the stone bends light. Each gem has its own range.</td><td>Gem refractometer with contact liquid; use the highest reading.</td><td>Enter three decimals, e.g. <span class="code">1.765</span>. Allowed range 1.3-3.0. If the scale shows no shadow edge at all, tick <b>Over the limit (no reading)</b> instead. Leave it blank if you have no refractometer.</td></tr>
@@ -174,7 +239,7 @@ The system replies <span class="code">Web interface running: open http://localho
 <h2>7.2 Reading the result</h2>
 <p class="fig"><img src="{{IMG}}/ident_top.png" width="430"></p>
 <p class="caption">Figure 5. Result for a natural blue sapphire, with the certainty scale opened</p>
-<p class="tcaption">Table 3. Parts of the result page</p>
+<p class="tcaption">Table 4. Parts of the result page</p>
 <table class="data">
 <tr><th style="width:26%">Part</th><th>Meaning</th></tr>
 <tr><td>Title (e.g. <i>Blue sapphire</i>)</td><td>The most likely identification, with the species underneath.</td></tr>
@@ -292,12 +357,12 @@ The system replies <span class="code">Web interface running: open http://localho
 <div class="tip">The list is stored only in your own browser on your computer; nothing is sent anywhere. It will be empty in a private window, in a different browser, or after clearing your browsing data.</div>
 
 <h1>14. Using the system on a phone or tablet</h1>
-<p>The pages adapt to small screens (Figure 16). On a narrow screen the links in the top bar are replaced by a <b>menu button</b> (three lines) in the top right corner: tap it to open the menu, and tap a link or press it again to close. To use a phone on the same network, start the server on the computer and open <span class="code">http://&lt;computer's IP address&gt;:8080</span> on the phone; Windows Firewall must allow SWI-Prolog on private networks.</p>
+<p>The pages adapt to small screens (Figure 16). On a narrow screen the links in the top bar are replaced by a <b>menu button</b> (three lines) in the top right corner: tap it to open the menu, and tap a link or press it again to close. The easiest way to use a phone or tablet is the online version: open <b>https://gemstone-identification-assistant.onrender.com</b> in its browser. Alternatively, to use a phone on the same network as a computer running the system, open <span class="code">http://&lt;computer's IP address&gt;:8080</span> on the phone; Windows Firewall must allow SWI-Prolog on private networks.</p>
 <p class="fig"><img src="{{IMG}}/phone.png" width="420"></p>
 <p class="caption">Figure 16. Home page and a result on a phone-sized screen</p>
 
 <h1>15. Troubleshooting</h1>
-<p class="tcaption">Table 4. Common problems and solutions</p>
+<p class="tcaption">Table 5. Common problems and solutions</p>
 <table class="data">
 <tr><th style="width:34%">Problem</th><th>Solution</th></tr>
 <tr><td>"'swipl' is not recognized as an internal or external command"</td><td>SWI-Prolog is not on the PATH. Re-run the installer and select "Add swipl to the system PATH", then open a <b>new</b> terminal. Alternatively run it with its full path: <span class="code">"C:\Program Files\swipl\bin\swipl.exe" main.pl</span>.</td></tr>
@@ -312,11 +377,13 @@ The system replies <span class="code">Web interface running: open http://localho
 <tr><td>Result says "We could not identify this stone"</td><td>Re-check the readings (RI usually has three decimals, SG two) and the optic character. The stone may also be outside the system's scope; seek a laboratory test.</td></tr>
 <tr><td>Changes to the program files do not appear</td><td>In the Prolog terminal type <kbd>make.</kbd> to reload changed files, then refresh the browser (Ctrl+F5). Or stop and restart the system.</td></tr>
 <tr><td>Windows Firewall message on first start</td><td>Choose <b>Allow</b> for private networks.</td></tr>
+<tr><td>The online version is slow to open, or shows a loading or error page</td><td>The free hosting service sleeps after about 15 minutes without visitors. Wait up to a minute and refresh the page. If it still does not load, use the system on your own computer (Section 4).</td></tr>
+<tr><td>No <b>Download ZIP</b> option on GitHub, or the page is not found</td><td>The repository may be private. Ask the author for access or for the ZIP file, then continue from Section 4.3 step 3.</td></tr>
 <tr><td>The page fonts look plain</td><td>You are offline; the page falls back to standard fonts. Everything still works.</td></tr>
 </table>
 
 <h1>16. Console mode (without a browser)</h1>
-<p>If the web interface cannot be used, the same functions are available in the terminal.</p>
+<p>When the system runs on your own computer (Option B, Section 4), the same functions are also available in the Command Prompt, without a browser. This mode is not available in the online version.</p>
 <p><b>Step 1.</b> Start SWI-Prolog with <kbd>swipl main.pl</kbd>.</p>
 <p><b>Step 2.</b> Type <kbd>start.</kbd> A menu appears:</p>
 <pre>What would you like to do?
@@ -350,7 +417,7 @@ WHY I AM ASKING:
 <p>The rule base can also be exported to a spreadsheet file with <kbd>export_rules_csv('rules_table.csv').</kbd></p>
 
 <h1>18. Quick reference</h1>
-<p class="tcaption">Table 5. Commands</p>
+<p class="tcaption">Table 6. Commands</p>
 <table class="data">
 <tr><th style="width:36%">Command (type at the ?- prompt)</th><th>Effect</th></tr>
 <tr><td class="code">swipl main.pl</td><td>(in the terminal) Load the system.</td></tr>
@@ -363,10 +430,11 @@ WHY I AM ASKING:
 <tr><td class="code">halt.</td><td>Leave SWI-Prolog.</td></tr>
 </table>
 
-<p class="tcaption">Table 6. Web pages</p>
+<p class="tcaption">Table 7. Web pages</p>
 <table class="data">
 <tr><th style="width:36%">Address</th><th>Page</th></tr>
-<tr><td class="code">http://localhost:8080/</td><td>Home page, form, examples, glossary</td></tr>
+<tr><td class="code">https://gemstone-identification-assistant.onrender.com</td><td>Online version (no installation)</td></tr>
+<tr><td class="code">http://localhost:8080/</td><td>Home page, form, examples, glossary (on your own computer)</td></tr>
 <tr><td class="code">http://localhost:8080/consult</td><td>Step-by-step consultation</td></tr>
 <tr><td class="code">http://localhost:8080/rules</td><td>Knowledge base: gem facts and all rules</td></tr>
 </table>
