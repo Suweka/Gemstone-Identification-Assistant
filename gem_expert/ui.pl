@@ -186,7 +186,7 @@ identify_form(Vals) -->
           form([class('gem-form live-form'), action('/identify'), method(get)],
             [ fieldset(
                 [ legend([span(class(num), '1'), 'Instrument readings']),
-                  div(class('field-grid'),
+                  div(class('field-grid two'),
                     [ \field(ri, RI), \field(sg, SG), \field(optic, Optic) ]) ]),
               fieldset(
                 [ legend([span(class(num), '2'), 'What you can see']),
@@ -250,10 +250,14 @@ field(sg, V) -->
                  'How heavy the stone is compared with the same volume of water.',
                  'Weigh the stone in air and in water (hydrostatic balance).').
 field(optic, V) -->
-    { optic_options(Os) },
-    select_field(optic, 'Optic character', V, Os,
-                 'Whether light passes through as one ray or is split in two.',
-                 'Turn the stone between crossed filters in a polariscope.').
+    { findall(opt(O, [Short, span(class(tsub), Term)], \[Svg], Tip),
+              ( optic_tile(O, Short, Term, Tip), optic_svg(O, Svg) ),
+              Opts) },
+    picture_field(optic, 'Optic character', V, Opts,
+                  'Whether light passes through as one ray or is split in two. Pick the picture that matches what you see.',
+                  'Turn the stone between crossed filters in a polariscope. A conoscope (or a glass sphere held over the stone) shows the cross or curved bars.').
+
+
 field(colour, V) -->
     { colour_order(Order),                          % colour-wheel order, not alphabetical
       findall(opt(C, L, span([class(swatch), style(St)], ''), L),
@@ -277,6 +281,31 @@ field(inclusion, V) -->
     picture_field(inclusion, 'Inclusions', V, Opts,
                   'Tiny features inside the stone that reveal how it formed. Pick the sketch closest to what you see.',
                   'Examine it with a 10x jeweller''s loupe.').
+
+% what the user sees for each optic character
+optic_tile(isotropic, 'Stays dark', 'singly refractive',
+           'The stone stays dark all the way round as you rotate it in the polariscope: singly refractive (isotropic), e.g. spinel, garnet, glass.').
+optic_tile(doubly_refractive, 'Blinks light/dark', 'doubly refractive',
+           'The stone turns light and dark four times per full turn in the polariscope, but you have not checked the figure: doubly refractive, axis not known.').
+optic_tile(uniaxial, 'Dark cross', 'uniaxial',
+           'In the conoscope you see a dark cross, often with coloured rings: uniaxial, e.g. corundum, quartz, tourmaline, beryl, zircon.').
+optic_tile(biaxial, 'Curved bars', 'biaxial',
+           'In the conoscope you see one or two curved dark bars (brushes): biaxial, e.g. topaz, chrysoberyl, feldspar.').
+
+% small drawings of the polariscope / conoscope views
+optic_svg(O, Svg) :-
+    optic_marks(O, Marks),
+    format(atom(Svg),
+      '<svg class="incl" viewBox="0 0 44 44" aria-hidden="true">~w</svg>', [Marks]).
+
+optic_marks(isotropic,
+  '<circle cx="22" cy="22" r="20" fill="#1f2433" stroke="#9aa3c0" stroke-width="1.5"/><polygon points="16,12 28,12 34,18 34,26 28,32 16,32 10,26 10,18" fill="#2f3547" stroke="#596079" stroke-width="1"/><path d="M33 35 a15 15 0 0 1 -22 0" fill="none" stroke="#9aa3c0" stroke-width="1.2" marker-end="none"/><polygon points="10,33 13,37 14,33" fill="#9aa3c0"/>').
+optic_marks(doubly_refractive,
+  '<circle cx="22" cy="22" r="20" fill="#1f2433" stroke="#9aa3c0" stroke-width="1.5"/><polygon points="7,16 14,11 19,16 19,24 14,29 7,24" fill="#e8ecff" stroke="#9aa3c0" stroke-width="1"/><polygon points="25,16 32,11 37,16 37,24 32,29 25,24" fill="#343a4f" stroke="#596079" stroke-width="1"/><text x="22" y="40" text-anchor="middle" font-size="7" fill="#c9cfe3" font-family="Arial">&#8646;</text>').
+optic_marks(uniaxial,
+  '<circle cx="22" cy="22" r="20" fill="#eef2ff" stroke="#9aa3c0" stroke-width="1.5"/><g fill="none" stroke="#9aa3c0" stroke-width="1"><circle cx="22" cy="22" r="6"/><circle cx="22" cy="22" r="11"/><circle cx="22" cy="22" r="16"/></g><g stroke="#1f2433" stroke-width="3.5" stroke-linecap="round"><line x1="22" y1="4" x2="22" y2="40"/><line x1="4" y1="22" x2="40" y2="22"/></g>').
+optic_marks(biaxial,
+  '<circle cx="22" cy="22" r="20" fill="#eef2ff" stroke="#9aa3c0" stroke-width="1.5"/><g fill="none" stroke="#9aa3c0" stroke-width="1"><ellipse cx="13" cy="22" rx="4" ry="4"/><ellipse cx="31" cy="22" rx="4" ry="4"/><ellipse cx="22" cy="22" rx="16" ry="10"/></g><g fill="none" stroke="#1f2433" stroke-width="3.2" stroke-linecap="round"><path d="M7 9 Q16 22 7 35"/><path d="M37 9 Q28 22 37 35"/></g>').
 
 % picture_field: a group of picture tiles that work as radio buttons.
 % The first tile ("Not checked") sends an empty value, i.e. unknown.
@@ -1682,6 +1711,10 @@ legend .num{margin:0;width:28px;height:28px;font-size:.9rem}
 .field .where{margin:8px 0 0;font-size:.8rem;color:var(--muted)}
 .field .otl{display:flex;align-items:center;gap:8px;margin:8px 0 0;font-size:.88rem;font-weight:500;cursor:pointer}
 .field-grid.one{grid-template-columns:1fr}
+.field-grid .field.pics{grid-column:1/-1}
+.field-grid.two{grid-template-columns:1fr 1fr}
+@media (max-width:640px){.field-grid.two{grid-template-columns:1fr}}
+.tsub{display:block;font-size:.7rem;font-weight:500;color:var(--muted);margin-top:1px}
 .flabel{display:block;font-weight:700;margin-bottom:2px}
 .choices{display:flex;flex-wrap:wrap;gap:8px}
 .opt{position:relative;cursor:pointer}
