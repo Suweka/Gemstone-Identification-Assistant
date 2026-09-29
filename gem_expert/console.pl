@@ -158,7 +158,11 @@ print_identification :-
                  fact_cf(T, GC), percent(GC, GP), label(G, GL), cf_word(GP, GW),
                  format("  ~w. ~w  ~w% (~w)~n", [N, GL, GP, GW]),
                  evidence_for(Kind, G, Ev),
-                 forall(member(E, Ev), format("       + ~w~n", [E])) ))
+                 forall(member(E, Ev), format("       + ~w~n", [E])) )),
+        (   Kind = candidates(_), next_measurement_text(Gs, Head, Lines)
+        ->  format("~nMOST USEFUL NEXT MEASUREMENT~n  ~w~n", [Head]),
+            forall(member(L, Lines), format("    - ~w~n", [L]))
+        ;   true )
     ;   true ),
     findall(A, (fired(_, _, advice(K)), advice_text(K, A)), Advice),
     (   Advice \== []

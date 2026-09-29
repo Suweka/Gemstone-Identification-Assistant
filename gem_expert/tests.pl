@@ -216,6 +216,18 @@ test(tc45_parse_over_the_limit) :-
     parse_query("blue stone, RI over the limit, SG 4.70, uniaxial", identify, F, _),
     memberchk(ri(over_limit), F).
 
+test(tc46_next_measurement_spinel_garnet) :-
+    % SG ranges of spinel and garnet overlap, RI ranges barely do: measure RI
+    identify([optic(isotropic), observed_colour(red)]),
+    next_measurement([spinel, garnet], ri, 1, 1).
+
+test(tc47_next_measurement_optic_first_when_it_separates) :-
+    % with only SG 3.60 given, optic character splits the three candidates best
+    identify([sg(3.60)]),
+    result_kind(candidates(Gs)),
+    next_measurement(Gs, K, _, _),
+    memberchk(K, [ri, optic]).
+
 test(tc42_certainty_words) :-
     cf_word(90, "very likely"), cf_word(63, "likely"), cf_word(52, "possible"),
     cf_word(25, "weak evidence"), cf_word(5, "very weak evidence").

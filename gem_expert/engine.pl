@@ -715,6 +715,51 @@ evidence_for(Kind, G, Items) :-
               format(string(Text), "~w (+~w%, rule ~w)", [E, P, Id]) ),
             Items).
 
+/* ---- Most useful next measurement --------------------------------
+   next_measurement(+Candidates, -Key, -Separated, -Pairs)
+   Of the core measurements the user has not given (RI, SG, optic
+   character), choose the one that would tell apart the most pairs of
+   candidate gems. Two ranges "tell apart" two gems when they overlap by
+   less than half of the narrower range. Fails if nothing helps. */
+next_measurement(Gs, Key, Best, Pairs) :-
+    findall(A-B, ( nth1(I, Gs, A), nth1(J, Gs, B), I < J ), PairList),
+    length(PairList, Pairs), Pairs > 0,
+    findall(NegS-Ord-K,
+            ( nth1(Ord, [ri, sg, optic], K), test(missing(K)),
+              aggregate_all(count, ( member(A-B, PairList), separates(K, A, B) ), S),
+              S > 0, NegS is -S ),
+            Scored),
+    msort(Scored, [NegBest-_-Key|_]),
+    Best is -NegBest.
+
+separates(optic, A, B) :- optic(A, OA), optic(B, OB), OA \== OB.
+separates(ri, A, B)    :- ri_range(A, A1, A2), ri_range(B, B1, B2), little_overlap(A1, A2, B1, B2).
+separates(sg, A, B)    :- sg_range(A, A1, A2), sg_range(B, B1, B2), little_overlap(A1, A2, B1, B2).
+
+little_overlap(A1, A2, B1, B2) :-
+    Overlap is max(0, min(A2, B2) - max(A1, B1)),
+    Narrow is min(A2 - A1, B2 - B1),
+    (   Narrow =< 0 -> Overlap =:= 0 ; Overlap / Narrow < 0.5 ).
+
+% what each candidate would read for that measurement
+next_value_text(ri, G, T)    :- ri_range(G, A, B), format(string(T), "~3f-~3f", [A, B]).
+next_value_text(sg, G, T)    :- sg_range(G, A, B), format(string(T), "~2f-~2f", [A, B]).
+next_value_text(optic, G, T) :- optic(G, O), optic_phrase(O, T).
+
+measure_how(ri,    "with a gem refractometer").
+measure_how(sg,    "by weighing the stone in air and in water (hydrostatic balance)").
+measure_how(optic, "with a polariscope").
+
+next_measurement_text(Gs, Head, Lines) :-
+    next_measurement(Gs, K, S, P),
+    key_phrase(K, KP0), string_lower(KP0, KP), measure_how(K, How),
+    (   P =:= 1 -> Effect = "It would tell these two gems apart"
+    ;   S =:= P -> Effect = "It would tell all of these gems apart"
+    ;   format(string(Effect), "It would tell apart ~w of the ~w pairs of gems", [S, P]) ),
+    format(string(Head), "Measure ~w ~w next. ~w:", [KP, How, Effect]),
+    findall(L, ( member(G, Gs), label(G, GL), next_value_text(K, G, V),
+                 format(string(L), "~w: ~w", [GL, V]) ), Lines).
+
 evidence_text(r14, _, _, "Consistent with everything you entered") :- !.
 evidence_text(_, Conds, candidate(_), E) :- last(Conds, C), friendly_reason(C, E), !.
 evidence_text(_, Conds, _, E) :-

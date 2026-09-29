@@ -617,8 +617,18 @@ alternatives_list(Kind, Title, Intro, Gs) -->
                 fact_cf(T, CF), percent(CF, Pc), cf_word(Pc, Word),
                 format(atom(W), 'width:~w%', [Pc]), format(atom(PT), '~w%', [Pc]),
                 evidence_for(Kind, G, Ev), findall(li(E), member(E, Ev), EItems) ),
-              Cards) },
-    html(div(class(block), [ h3(Title), p(class(muted), Intro), div(class('rank-list'), Cards) ])).
+              Cards),
+      next_step_box(Gs, Next) },
+    html(div(class(block), [ h3(Title), p(class(muted), Intro), Next, div(class('rank-list'), Cards) ])).
+
+% "most useful next measurement" callout (empty when no measurement helps)
+next_step_box(Gs, div(class('next-step'),
+                      [ span(class(icon), \['&#128270;']),
+                        div([ b('Most useful next measurement'), p(Head),
+                              ul(Items) ]) ])) :-
+    next_measurement_text(Gs, Head, Lines), !,
+    findall(li(L), member(L, Lines), Items).
+next_step_box(_, '').
 
 range_text(G, T) :-
     ri_range(G, R1, R2), sg_range(G, S1, S2), optic(G, O),
@@ -1699,6 +1709,10 @@ legend .num{margin:0;width:28px;height:28px;font-size:.9rem}
 .cffill{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:linear-gradient(90deg,#4338ca,#7c3aed)}
 .cftag{font-size:.74rem;font-weight:600;color:#15803d;background:#e7f6ec;border-radius:4px;padding:1px 6px}
 .rank-list{display:flex;flex-direction:column;gap:12px}
+.next-step{display:flex;gap:12px;align-items:flex-start;background:#fdf6e9;border:1px solid #f3dcae;border-left:5px solid var(--accent);border-radius:10px;padding:12px 16px;margin:0 0 14px}
+.next-step .icon{font-size:1.3rem;line-height:1.2}
+.next-step p{margin:2px 0 4px}
+.next-step ul{margin:0;padding-left:18px;font-size:.9rem}
 .rank{display:flex;gap:14px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:12px}
 .rnum{flex:none;width:28px;height:28px;border-radius:50%;background:#eef0ff;color:var(--primary);font-weight:700;display:flex;align-items:center;justify-content:center}
 .rank .pic{flex:none;width:64px;height:64px;border-radius:10px;background:radial-gradient(circle at 50% 40%,#3a3f66,#15172c);display:flex;align-items:center;justify-content:center}
