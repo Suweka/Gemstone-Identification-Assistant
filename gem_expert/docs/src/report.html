@@ -306,8 +306,8 @@ fact_phrase(ri(N)) --> ri_word, link, number(N).</pre>
 <p>The main interface is a web application served by SWI-Prolog's built-in HTTP library, so nothing beyond SWI-Prolog needs to be installed. The home page introduces the system, explains the two chaining methods in plain terms, and provides a form in which each field explains what the property means and how to measure it (Figures 5 and 6). Result pages present the conclusion, certainty and origin as badges, the recommendation, a reasoning diagram and the plain-language reasoning steps (Figure 7). A menu-driven console interface provides the same functions as a backup. Full instructions are in the separate User Manual.</p>
 <p>Several features were added specifically to make the system usable by non-experts:</p>
 <ul>
-<li><b>Pictures instead of terms.</b> Colour is chosen from swatches, and optical effects and inclusions from small drawings of what they look like under a loupe, because a beginner may not know the words "silk" or "fingerprint" (Figure 6).</li>
-<li><b>Checking readings as they are typed.</b> As an RI or SG value is entered, the page immediately says which gems it fits, warns about unusual values, and blocks impossible ones (Figure 8). The ranges are sent from the knowledge base, so the page and the rules always agree.</li>
+<li><b>Pictures instead of terms.</b> Colour is chosen from swatches, optical effects and inclusions from small drawings of what they look like under a loupe, and the optic character from drawings of what is seen in the polariscope and conoscope ("stays dark", "blinks light and dark", "dark cross", "curved bars"), because a beginner may not know the words "silk", "fingerprint" or "biaxial" (Figure 6).</li>
+<li><b>Checking readings as they are typed.</b> As an RI or SG value is entered, the page immediately says which gems it fits, warns about unusual values, and blocks impossible ones once the box is left (Figure 8). Under each box a "normal range" line gives the range covered by the knowledge base, with a link to the range of every gem. The ranges are sent from the knowledge base, so the page and the rules always agree.</li>
 <li><b>Certainty in plain words.</b> Every certainty factor is shown with a phrase such as "90% (very likely)" or "52% (possible)", and the scale is explained on request, including that a certainty factor is not a statistical probability.</li>
 <li><b>An "over the limit" option</b> for refractometer readings (Section 2.3).</li>
 <li><b>Guidance when data is missing:</b> ranked candidates and the most useful next measurement (Section 3.5).</li>
@@ -318,7 +318,7 @@ fact_phrase(ri(N)) --> ri_word, link, number(N).</pre>
 <p class="fig"><img src="{{IMG}}/home_hero.png" width="560"></p>
 <p class="caption">Figure 5. Home page introducing the system, with the plain-English question box</p>
 <p class="fig"><img src="{{IMG}}/home_form.png" width="520"></p>
-<p class="caption">Figure 6. Input form: instrument readings, and picture choices for colour, optical effect and inclusions</p>
+<p class="caption">Figure 6. Input form: instrument readings, and picture choices for optic character, colour, optical effect and inclusions</p>
 <p class="fig"><img src="{{IMG}}/ident_top.png" width="470"></p>
 <p class="caption">Figure 7. Identification result for a natural blue sapphire, with the certainty scale explained</p>
 <p class="fig"><img src="{{IMG}}/live_checks.png" width="560"></p>

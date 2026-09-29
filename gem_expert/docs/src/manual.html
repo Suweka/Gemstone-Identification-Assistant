@@ -133,26 +133,27 @@ The system replies <span class="code">Web interface running: open http://localho
 <h1>6. Describing your stone</h1>
 <p>The form (Figure 3) has two groups of fields. <b>Every field is optional.</b> Fill in what you know and leave the rest as <i>Unknown / not checked</i>. The more you fill in, the more certain the answer. Each field shows what the property means (grey text) and how to measure it (<b>HOW</b>).</p>
 <p class="fig"><img src="{{IMG}}/home_form.png" width="520"></p>
-<p class="caption">Figure 3. The input form: instrument readings, and picture choices for what you can see</p>
+<p class="caption">Figure 3. The input form: instrument readings with normal ranges, and picture choices for the optic character and for what you can see</p>
 <p class="tcaption">Table 2. Input fields</p>
 <table class="data">
 <tr><th style="width:17%">Field</th><th style="width:26%">What it is</th><th style="width:27%">How to obtain it</th><th>Tips</th></tr>
 <tr><td>Refractive index (RI)</td><td>How strongly the stone bends light. Each gem has its own range.</td><td>Gem refractometer with contact liquid; use the highest reading.</td><td>Enter three decimals, e.g. <span class="code">1.765</span>. Allowed range 1.3-3.0. If the scale shows no shadow edge at all, tick <b>Over the limit (no reading)</b> instead. Leave it blank if you have no refractometer.</td></tr>
 <tr><td>Specific gravity (SG)</td><td>How heavy the stone is compared with the same volume of water.</td><td>Hydrostatic balance: SG = weight in air / (weight in air - weight in water).</td><td>Enter two decimals, e.g. <span class="code">4.00</span>. Allowed range 1.0-8.0.</td></tr>
-<tr><td>Optic character</td><td>Whether light passes as one ray (singly refractive) or is split in two (doubly refractive).</td><td>Polariscope: rotate the stone between crossed filters. A conoscope shows uniaxial or biaxial.</td><td>If you only know it is doubly refractive, choose <i>Doubly refractive (axis not known)</i>.</td></tr>
+<tr><td>Optic character</td><td>Whether light passes as one ray (singly refractive) or is split in two (doubly refractive).</td><td>Polariscope: rotate the stone between crossed filters. A conoscope (or a glass sphere held over the stone) shows the interference figure.</td><td>Click the picture that matches what you see: <i>Stays dark</i> (singly refractive), <i>Blinks light/dark</i> (doubly refractive, figure not checked), <i>Dark cross</i> (uniaxial) or <i>Curved bars</i> (biaxial).</td></tr>
 <tr><td>Colour</td><td>The main body colour.</td><td>Look in daylight against a white background.</td><td>Click the swatch closest to your stone.</td></tr>
 <tr><td>Optical effect</td><td>Star, cat's-eye, colour change or moonstone glow.</td><td>Look under a single light source and rotate the stone; compare daylight and lamp light for colour change.</td><td>Click the picture that looks like your stone. Choose <i>None</i> if you looked and saw no effect.</td></tr>
 <tr><td>Inclusions</td><td>Tiny features inside the stone that reveal how it formed.</td><td>Examine with a 10x jeweller's loupe.</td><td>Click the sketch closest to what you see. <i>Clean</i> means you looked and saw nothing inside.</td></tr>
 </table>
-<p>Colour, optical effect and inclusions are chosen by clicking a <b>picture tile</b>; the chosen tile is outlined in blue. Leave the <b>Not checked</b> tile selected if you did not look. Hover over a tile to see its full description.</p>
+<p>Optic character, colour, optical effect and inclusions are chosen by clicking a <b>picture tile</b>; the chosen tile is outlined in blue. Leave the <b>Not checked</b> tile selected if you did not look. Hover over a tile to see its full description.</p>
 
 <h2>6.1 Instant checks on your readings</h2>
 <p>As soon as you type an RI or SG value, a short note appears under the box (Figure 4):</p>
 <ul>
 <li><b>Green "Fits: ..."</b> lists the gems whose range includes your reading.</li>
 <li><b>Orange warning</b>: the value is unusual (no gem in the system has it, or it is above what most refractometers can read). Check your measurement.</li>
-<li><b>Red error</b>: the value is impossible (outside the allowed range). The form will not be sent until you correct it.</li>
+<li><b>Red error</b>: the value is impossible (outside the allowed range). It appears when you leave the box, and the form will not be sent until you correct it.</li>
 </ul>
+<p>Under each box a <b>Normal range</b> line shows the range of readings covered by the system (for example RI 1.515 - 1.990 for gems). The link <b>See the range for each gem</b> opens the ranges of every gem in a new tab, so your form is kept.</p>
 <p>Ticking <b>Over the limit (no reading)</b> greys out the RI box and shows which gems read above the refractometer's limit (zircon, cubic zirconia and some garnets).</p>
 <p class="fig"><img src="{{IMG}}/live_checks.png" width="540"></p>
 <p class="caption">Figure 4. Readings checked as you type (top) and the "Over the limit" option (bottom)</p>
