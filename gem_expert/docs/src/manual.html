@@ -93,7 +93,7 @@ li{margin-bottom:3pt}
 <li>Open a terminal: on Windows, open the <span class="code">gem_expert</span> folder in File Explorer, click the address bar, type <kbd>cmd</kbd> and press Enter. On macOS or Linux, open Terminal and use <span class="code">cd</span> to go to the folder.</li>
 <li>Type <kbd>swipl --version</kbd> and press Enter. You should see a line such as <span class="code">SWI-Prolog version 10.1.16 for x64-win64</span>.</li>
 </ol>
-<div class="tip">If you see "'swipl' is not recognized", SWI-Prolog is not on the PATH. See Troubleshooting (Section 12).</div>
+<div class="tip">If you see "'swipl' is not recognized", SWI-Prolog is not on the PATH. See Troubleshooting (Section 15).</div>
 
 <h1>4. Starting and stopping the system</h1>
 <h2>4.1 Start the web interface (recommended)</h2>
@@ -131,18 +131,30 @@ The system replies <span class="code">Web interface running: open http://localho
 
 <h1>6. Describing your stone</h1>
 <p>The form (Figure 3) has two groups of fields. <b>Every field is optional.</b> Fill in what you know and leave the rest as <i>Unknown / not checked</i>. The more you fill in, the more certain the answer. Each field shows what the property means (grey text) and how to measure it (<b>HOW</b>).</p>
-<p class="fig"><img src="{{IMG}}/home_form.png" width="540"></p>
-<p class="caption">Figure 3. The input form</p>
+<p class="fig"><img src="{{IMG}}/home_form.png" width="520"></p>
+<p class="caption">Figure 3. The input form: instrument readings, and picture choices for what you can see</p>
 <p class="tcaption">Table 2. Input fields</p>
 <table class="data">
 <tr><th style="width:17%">Field</th><th style="width:26%">What it is</th><th style="width:27%">How to obtain it</th><th>Tips</th></tr>
-<tr><td>Refractive index (RI)</td><td>How strongly the stone bends light. Each gem has its own range.</td><td>Gem refractometer with contact liquid; use the highest reading.</td><td>Enter three decimals, e.g. <span class="code">1.765</span>. Allowed range 1.3-3.0. Leave blank if the scale shows no edge (over the limit) or you have no refractometer.</td></tr>
+<tr><td>Refractive index (RI)</td><td>How strongly the stone bends light. Each gem has its own range.</td><td>Gem refractometer with contact liquid; use the highest reading.</td><td>Enter three decimals, e.g. <span class="code">1.765</span>. Allowed range 1.3-3.0. If the scale shows no shadow edge at all, tick <b>Over the limit (no reading)</b> instead. Leave it blank if you have no refractometer.</td></tr>
 <tr><td>Specific gravity (SG)</td><td>How heavy the stone is compared with the same volume of water.</td><td>Hydrostatic balance: SG = weight in air / (weight in air - weight in water).</td><td>Enter two decimals, e.g. <span class="code">4.00</span>. Allowed range 1.0-8.0.</td></tr>
 <tr><td>Optic character</td><td>Whether light passes as one ray (singly refractive) or is split in two (doubly refractive).</td><td>Polariscope: rotate the stone between crossed filters. A conoscope shows uniaxial or biaxial.</td><td>If you only know it is doubly refractive, choose <i>Doubly refractive (axis not known)</i>.</td></tr>
-<tr><td>Colour</td><td>The main body colour.</td><td>Look in daylight against a white background.</td><td>Choose the closest colour.</td></tr>
-<tr><td>Optical effect</td><td>Star, cat's-eye, colour change or moonstone glow.</td><td>Look under a single light source and rotate the stone; compare daylight and lamp light for colour change.</td><td>Choose <i>No special effect</i> if you looked and saw none.</td></tr>
-<tr><td>Inclusions</td><td>Tiny features inside the stone that reveal how it formed.</td><td>Examine with a 10x jeweller's loupe.</td><td>Choose the most obvious type. <i>None visible</i> means you looked and the stone is clean.</td></tr>
+<tr><td>Colour</td><td>The main body colour.</td><td>Look in daylight against a white background.</td><td>Click the swatch closest to your stone.</td></tr>
+<tr><td>Optical effect</td><td>Star, cat's-eye, colour change or moonstone glow.</td><td>Look under a single light source and rotate the stone; compare daylight and lamp light for colour change.</td><td>Click the picture that looks like your stone. Choose <i>None</i> if you looked and saw no effect.</td></tr>
+<tr><td>Inclusions</td><td>Tiny features inside the stone that reveal how it formed.</td><td>Examine with a 10x jeweller's loupe.</td><td>Click the sketch closest to what you see. <i>Clean</i> means you looked and saw nothing inside.</td></tr>
 </table>
+<p>Colour, optical effect and inclusions are chosen by clicking a <b>picture tile</b>; the chosen tile is outlined in blue. Leave the <b>Not checked</b> tile selected if you did not look. Hover over a tile to see its full description.</p>
+
+<h2>6.1 Instant checks on your readings</h2>
+<p>As soon as you type an RI or SG value, a short note appears under the box (Figure 4):</p>
+<ul>
+<li><b>Green "Fits: ..."</b> lists the gems whose range includes your reading.</li>
+<li><b>Orange warning</b>: the value is unusual (no gem in the system has it, or it is above what most refractometers can read). Check your measurement.</li>
+<li><b>Red error</b>: the value is impossible (outside the allowed range). The form will not be sent until you correct it.</li>
+</ul>
+<p>Ticking <b>Over the limit (no reading)</b> greys out the RI box and shows which gems read above the refractometer's limit (zircon, cubic zirconia and some garnets).</p>
+<p class="fig"><img src="{{IMG}}/live_checks.png" width="540"></p>
+<p class="caption">Figure 4. Readings checked as you type (top) and the "Over the limit" option (bottom)</p>
 <p>Below the fields are three action panels: <b>Identify my stone</b>, <b>Check a claim</b> (choose a gem in the list, then <b>Verify</b>) and <b>Ask me step by step</b>. <b>Clear the form</b> empties all fields.</p>
 
 <h1>7. Identifying a stone</h1>
@@ -150,18 +162,18 @@ The system replies <span class="code">Web interface running: open http://localho
 <ol>
 <li>Fill in the fields you know (Section 6).</li>
 <li>Press <b>Identify stone</b>.</li>
-<li>Read the result page (Figure 4).</li>
+<li>Read the result page (Figure 5).</li>
 </ol>
 
 <h2>7.2 Reading the result</h2>
 <p class="fig"><img src="{{IMG}}/ident_top.png" width="430"></p>
-<p class="caption">Figure 4. Result for a natural blue sapphire</p>
+<p class="caption">Figure 5. Result for a natural blue sapphire, with the certainty scale opened</p>
 <p class="tcaption">Table 3. Parts of the result page</p>
 <table class="data">
 <tr><th style="width:26%">Part</th><th>Meaning</th></tr>
 <tr><td>Title (e.g. <i>Blue sapphire</i>)</td><td>The most likely identification, with the species underneath.</td></tr>
 <tr><td>Confidence badge</td><td><b>Strong match</b> (green): optic character, RI and SG all agree. <b>Possible match</b> (amber): data is incomplete or fits more than one gem. <b>No match</b> (grey): nothing in the knowledge base fits.</td></tr>
-<tr><td>Certainty bar</td><td>How strongly the expert rules believe the conclusion, from 0% to 100%.</td></tr>
+<tr><td>Certainty bar</td><td>How strongly the expert rules believe the conclusion, with a word that explains it: <b>very likely</b> (80-100%), <b>likely</b> (60-79%), <b>possible</b> (40-59%), <b>weak evidence</b> (20-39%), <b>very weak</b> (below 20%). Click <b>What does this percentage mean?</b> to see the scale. It is a certainty factor, not a statistical probability.</td></tr>
 <tr><td>Origin badge</td><td><b>Likely natural</b> (green), <b>Synthetic</b> or <b>laboratory test recommended</b> (amber), <b>Imitation</b> or <b>Glass or synthetic</b> (red), <b>Not determined</b> (grey, usually because no inclusions were reported). A <b>Probably heat-treated</b> badge appears when heat indicators were seen.</td></tr>
 <tr><td>What you should do</td><td>Practical recommendations.</td></tr>
 <tr><td>What you told us</td><td>Your inputs; fields you left empty show "not given".</td></tr>
@@ -169,12 +181,12 @@ The system replies <span class="code">Web interface running: open http://localho
 <tr><td>How the system reached this</td><td>Each reasoning step in plain English, with the rule number, its certainty, the expert knowledge behind it and its source.</td></tr>
 <tr><td>About (gem)</td><td>Reference facts about the identified gem.</td></tr>
 <tr><td>Technical trace</td><td>Click to open the full list of facts and fired rules (for gemmologists and examiners).</td></tr>
-<tr><td>Buttons</td><td><b>Edit my inputs</b> returns to the form with your values filled in; <b>Start a new stone</b> clears it.</td></tr>
+<tr><td>Buttons</td><td><b>Edit my inputs</b> returns to the form with your values filled in; <b>Print / Save as PDF</b> prints the result (Section 12); <b>Start a new stone</b> clears the form.</td></tr>
 </table>
 
 <h2>7.3 Using the reasoning diagram</h2>
 <p class="fig"><img src="{{IMG}}/ident_diagram.png" width="430"></p>
-<p class="caption">Figure 5. Forward-chaining diagram</p>
+<p class="caption">Figure 6. Forward-chaining diagram</p>
 <p>Your inputs are the blue boxes at the top. Each dark oval is a rule; its gold number shows the order in which it fired. Arrows show which facts made the rule fire and which new fact it added. Use the buttons:</p>
 <ul>
 <li><b>Play step by step</b>: replays the reasoning automatically, one rule at a time, with a caption explaining each step.</li>
@@ -184,9 +196,10 @@ The system replies <span class="code">Web interface running: open http://localho
 <p>Hover the mouse over any box to see its full details.</p>
 
 <h2>7.4 When some data is missing</h2>
-<p>If you leave out the RI, SG or optic character, the system cannot confirm a species. Instead it lists <b>Ranked possibilities</b> (Figure 6): every gem consistent with what you entered, ordered by certainty, with the evidence for each. Measure the missing properties to narrow the list.</p>
-<p class="fig"><img src="{{IMG}}/ranked.png" width="380"></p>
-<p class="caption">Figure 6. Ranked possibilities for a blue, uniaxial stone with no RI or SG</p>
+<p>If you leave out the RI, SG or optic character, the system cannot confirm a species. Instead it lists <b>Ranked possibilities</b> (Figure 7): every gem consistent with what you entered, ordered by certainty, with the evidence for each.</p>
+<p>Above the list, the yellow <b>Most useful next measurement</b> box tells you which missing measurement would narrow the list down best, and what each candidate would read. For example, for a red, singly refractive stone it advises measuring the refractive index, because spinel reads 1.712-1.736 and garnet 1.730-1.890.</p>
+<p class="fig"><img src="{{IMG}}/ranked.png" width="430"></p>
+<p class="caption">Figure 7. Ranked possibilities and the most useful next measurement for a red, singly refractive stone</p>
 
 <h1>8. Checking a claim (Verify)</h1>
 <ol>
@@ -194,63 +207,89 @@ The system replies <span class="code">Web interface running: open http://localho
 <li>In the <b>Check a claim</b> panel choose the gem the seller claims, e.g. <i>Ruby</i>.</li>
 <li>Press <b>Verify</b>.</li>
 </ol>
-<p>The answer is a clear <b>Yes</b> (green tick) or <b>No</b> (red cross). For a <b>No</b>, the page shows the <b>main reason</b>, what your data points to instead, and a <b>Why not?</b> list tracing the failure back through the rules (Figure 7). The backward-chaining diagram shows the question at the top, the rules tried below it, and each condition marked proved (green), failed (red) or never checked (dashed grey).</p>
+<p>The answer is a clear <b>Yes</b> (green tick) or <b>No</b> (red cross). For a <b>No</b>, the page shows the <b>main reason</b>, what your data points to instead, and a <b>Why not?</b> list tracing the failure back through the rules (Figure 8). The backward-chaining diagram shows the question at the top, the rules tried below it, and each condition marked proved (green), failed (red) or never checked (dashed grey).</p>
 <p class="fig"><img src="{{IMG}}/verify_no_top.png" width="430"></p>
-<p class="caption">Figure 7. A failed verification: a red spinel offered as a ruby</p>
+<p class="caption">Figure 8. A failed verification: a red spinel offered as a ruby</p>
 
 <h1>9. Step-by-step consultation</h1>
 <ol>
 <li>Click <b>Step by step</b> in the top bar (or <b>Ask me step by step</b> on the home page).</li>
 <li>Choose what you want to find out. <i>Find the species</i> lets the system test one gem hypothesis after another. You can also choose a particular gem.</li>
-<li>Answer each question and press <b>Answer</b>, or press <b>I don't know</b>.</li>
-<li>Open <b>Why are you asking this?</b> at any time to see which rule the system is testing and why it needs the answer (Figure 8).</li>
-<li>When the system has enough information it shows the answer, how many questions it needed, and a diagram of its reasoning.</li>
+<li>Answer each question and press <b>Answer</b>, or press <b>I don't know</b>. The bar at the top shows how far you are ("Question 2 of at most 6").</li>
+<li>Made a mistake? Press <b>Back</b> to return to the previous question and change your answer.</li>
+<li>Open <b>Why are you asking this?</b> at any time to see which rule the system is testing and why it needs the answer (Figure 9).</li>
+<li>When the system has enough information it shows the answer, how many questions it needed, and a diagram of its reasoning. <b>Change my last answer</b> takes you back one step.</li>
 </ol>
-<p class="fig"><img src="{{IMG}}/consult_q1.png" width="430"></p>
-<p class="caption">Figure 8. A consultation question with its explanation</p>
+<p class="fig"><img src="{{IMG}}/consult_q2.png" width="430"></p>
+<p class="caption">Figure 9. A consultation question with the progress bar, the Back button and the explanation</p>
 <div class="tip">The system asks only what it needs. For example, when checking for ruby, answering <i>Isotropic</i> to the first question ends the consultation immediately, because a ruby must be doubly refractive.</div>
 
 <h1>10. Asking in plain English</h1>
-<p>Type a question into the box on the home page and press <b>Ask</b>. The system shows what it understood (Figure 9) and then answers. Examples:</p>
+<p>Type a question into the box on the home page and press <b>Ask</b>. The system shows what it understood (Figure 10) and then answers. Examples:</p>
 <ul>
-<li><i>Is my stone a sapphire if the RI is 1.765 and it is blue?</i></li>
+<li><i>Is my stone a sapphire? RI 1.765, SG 4.00, uniaxial and blue</i></li>
 <li><i>What is a singly refractive red stone with SG 3.60?</i></li>
 <li><i>Could it be glass? isotropic, RI 1.52, gas bubbles</i></li>
-<li><i>RI 1.52, SG 2.57, biaxial, colourless, with adularescence</i></li>
+<li><i>Blue stone, RI over the limit, SG 4.70, uniaxial</i></li>
 </ul>
-<p>Understood words include RI / refractive index, SG / specific gravity, singly or doubly refractive, uniaxial, biaxial, colour names, star, cat's eye, colour change, adularescence, silk, crystals, fingerprints, gas bubbles, curved lines, swirl marks, discoid fractures, clean, and gem names. Words the system did not use are listed so you can rephrase.</p>
+<p>Understood words include RI / refractive index, "over the limit", SG / specific gravity, singly or doubly refractive, uniaxial, biaxial, colour names, star, cat's eye, colour change, adularescence, silk, crystals, fingerprints, gas bubbles, curved lines, swirl marks, discoid fractures, clean, and gem names. Words the system did not use are listed so you can rephrase.</p>
 <p class="fig"><img src="{{IMG}}/ask_result.png" width="430"></p>
-<p class="caption">Figure 9. A plain-English question and how it was understood</p>
+<p class="caption">Figure 10. A plain-English question and how it was understood</p>
 
 <h1>11. Worked examples</h1>
-<p>The <b>Example stones to try</b> section of the home page has 14 ready-made stones (Figure 10). Press <b>Try it</b> on any card to copy its readings into the form, then press <b>Identify stone</b> or <b>Verify</b>.</p>
+<p>The <b>Example stones to try</b> section of the home page has 15 ready-made stones (Figure 11). Press <b>Try it</b> on any card to copy its readings into the form, then press <b>Identify stone</b> or <b>Verify</b>.</p>
 <p class="fig"><img src="{{IMG}}/home_examples.png" width="540"></p>
-<p class="caption">Figure 10. Example stones</p>
+<p class="caption">Figure 11. Example stones</p>
 
 <h2>11.1 Example 1: a natural blue sapphire</h2>
 <table class="data">
 <tr><th style="width:26%">Input</th><td>RI 1.765, SG 4.00, Uniaxial, Blue, Silk</td></tr>
-<tr><th>Result</th><td><b>Blue sapphire</b> (species corundum) - Strong match, 90% certain; origin <b>Likely natural (76%)</b>.</td></tr>
+<tr><th>Result</th><td><b>Blue sapphire</b> (species corundum) - Strong match, 90% certain (very likely); origin <b>Likely natural (76%)</b>.</td></tr>
 <tr><th>Recommendation</th><td>Obtain an NGJA or other accredited laboratory certificate before purchase.</td></tr>
 <tr><th>Why</th><td>Rule r1 identified corundum from the optic character, RI and SG; rule r24 named the blue variety; rule r46 used the rutile silk as evidence of natural origin.</td></tr>
 </table>
 
 <h2>11.2 Example 2: a glass imitation</h2>
 <table class="data">
-<tr><th style="width:26%">Input</th><td>RI 1.60, Isotropic, Round gas bubbles (SG not measured)</td></tr>
-<tr><th>Result</th><td><b>Imitation: Glass</b> - 85% certain; origin <b>Imitation (not a natural gemstone)</b> (Figure 11).</td></tr>
+<tr><th style="width:26%">Input</th><td>RI 1.60, Isotropic, Gas bubbles (SG not measured)</td></tr>
+<tr><th>Result</th><td><b>Imitation: Glass</b> - 85% certain; origin <b>Imitation (not a natural gemstone)</b> (Figure 12).</td></tr>
 <tr><th>Recommendation</th><td>This is an imitation with little gem value; do not pay gemstone prices.</td></tr>
 </table>
 <p class="fig"><img src="{{IMG}}/glass.png" width="430"></p>
-<p class="caption">Figure 11. A glass imitation is detected</p>
+<p class="caption">Figure 12. A glass imitation is detected</p>
 
 <h2>11.3 Example 3: checking a claim that fails</h2>
 <table class="data">
 <tr><th style="width:26%">Input</th><td>RI 1.718, SG 3.60, Isotropic, Red; claim: <i>Ruby</i></td></tr>
-<tr><th>Result</th><td><b>No</b> - the stone does not match ruby. Main reason: a ruby must be doubly refractive (uniaxial) but the stone is singly refractive. The data points to <b>Red spinel</b> instead (Figure 7).</td></tr>
+<tr><th>Result</th><td><b>No</b> - the stone does not match ruby. Main reason: a ruby must be doubly refractive (uniaxial) but the stone is singly refractive. The data points to <b>Red spinel</b> instead (Figure 8).</td></tr>
 </table>
 
-<h1>12. Troubleshooting</h1>
+<h2>11.4 Example 4: a refractometer reading over the limit</h2>
+<table class="data">
+<tr><th style="width:26%">Input</th><td>RI <b>Over the limit</b> (ticked), SG 4.70, Uniaxial, Blue, Crystals</td></tr>
+<tr><th>Result</th><td><b>Blue zircon</b> (species zircon) - Strong match, 65% certain (likely); origin <b>Likely natural</b> (Figure 13).</td></tr>
+<tr><th>Why</th><td>Only zircon, cubic zirconia and some garnets read above the refractometer's limit; of those, only zircon is uniaxial with an SG of about 4.7. The certainty is lower than for a measured RI because the exact value is unknown.</td></tr>
+</table>
+<p class="fig"><img src="{{IMG}}/otl_result.png" width="430"></p>
+<p class="caption">Figure 13. A blue zircon identified with an RI over the refractometer limit</p>
+
+<h1>12. Printing or saving a result</h1>
+<p>Every result page has a <b>Print / Save as PDF</b> button at the bottom. It opens your browser's print window: choose a printer, or choose <b>Save as PDF</b> as the printer to keep a file. The printout (Figure 14) has a header with the date and time and a reminder that it is a first opinion, leaves out the menu and buttons, and includes the full diagram and technical trace. You can take it to a seller or a gem laboratory.</p>
+<p class="fig"><img src="{{IMG}}/print_page.png" width="330"></p>
+<p class="caption">Figure 14. First page of a printed result</p>
+
+<h1>13. Your recent stones</h1>
+<p>The system remembers the last eight results you looked at. They appear at the top of the form on the home page under <b>Your recent stones</b> (Figure 15). Click one to open its result again, or press <b>Clear list</b> to remove them.</p>
+<p class="fig"><img src="{{IMG}}/recent.png" width="520"></p>
+<p class="caption">Figure 15. Your recent stones on the home page</p>
+<div class="tip">The list is stored only in your own browser on your computer; nothing is sent anywhere. It will be empty in a private window, in a different browser, or after clearing your browsing data.</div>
+
+<h1>14. Using the system on a phone or tablet</h1>
+<p>The pages adapt to small screens (Figure 16). On a narrow screen the links in the top bar are replaced by a <b>menu button</b> (three lines) in the top right corner: tap it to open the menu, and tap a link or press it again to close. To use a phone on the same network, start the server on the computer and open <span class="code">http://&lt;computer's IP address&gt;:8080</span> on the phone; Windows Firewall must allow SWI-Prolog on private networks.</p>
+<p class="fig"><img src="{{IMG}}/phone.png" width="420"></p>
+<p class="caption">Figure 16. Home page and a result on a phone-sized screen</p>
+
+<h1>15. Troubleshooting</h1>
 <p class="tcaption">Table 4. Common problems and solutions</p>
 <table class="data">
 <tr><th style="width:34%">Problem</th><th>Solution</th></tr>
@@ -259,18 +298,20 @@ The system replies <span class="code">Web interface running: open http://localho
 <tr><td>Browser shows "This site can't be reached"</td><td>The server is not running. Check that you typed <kbd>server(8080).</kbd> with the full stop, and that the terminal window is still open. Check the port number in the address.</td></tr>
 <tr><td>Nothing happens after typing a command</td><td>Prolog is waiting for the full stop. Type <kbd>.</kbd> and press Enter.</td></tr>
 <tr><td>Error messages about files not found when running <span class="code">swipl main.pl</span></td><td>The terminal is not in the <span class="code">gem_expert</span> folder. Use <span class="code">cd</span> to move into it, or open the terminal from that folder.</td></tr>
-<tr><td>"Please check your input" page</td><td>A value is outside the allowed range (RI 1.3-3.0, SG 1.0-8.0) or is not a number. Press <b>Go back and fix it</b>.</td></tr>
+<tr><td>"Please check your input" page, or a red message under a box</td><td>A value is outside the allowed range (RI 1.3-3.0, SG 1.0-8.0) or is not a number. Correct it (or press <b>Go back and fix it</b>) and try again.</td></tr>
+<tr><td>The RI box is greyed out</td><td><b>Over the limit (no reading)</b> is ticked. Untick it to type an RI value.</td></tr>
+<tr><td>"Your recent stones" is missing or empty</td><td>It only appears once you have looked at a result in this browser. It is empty in private windows, in another browser, or after clearing browsing data.</td></tr>
+<tr><td>The print button prints extra pages or no colours</td><td>In the print window, turn on <b>Background graphics</b> and choose <b>Save as PDF</b> or your printer; the result normally fits on a few pages.</td></tr>
 <tr><td>Result says "We could not identify this stone"</td><td>Re-check the readings (RI usually has three decimals, SG two) and the optic character. The stone may also be outside the system's scope; seek a laboratory test.</td></tr>
 <tr><td>Changes to the program files do not appear</td><td>In the Prolog terminal type <kbd>make.</kbd> to reload changed files, then refresh the browser (Ctrl+F5). Or stop and restart the system.</td></tr>
 <tr><td>Windows Firewall message on first start</td><td>Choose <b>Allow</b> for private networks.</td></tr>
 <tr><td>The page fonts look plain</td><td>You are offline; the page falls back to standard fonts. Everything still works.</td></tr>
 </table>
 
-<h1>13. Console mode (without a browser)</h1>
+<h1>16. Console mode (without a browser)</h1>
 <p>If the web interface cannot be used, the same functions are available in the terminal.</p>
-<ol>
-<li>Start SWI-Prolog with <kbd>swipl main.pl</kbd>.</li>
-<li>Type <kbd>start.</kbd> A menu appears:
+<p><b>Step 1.</b> Start SWI-Prolog with <kbd>swipl main.pl</kbd>.</p>
+<p><b>Step 2.</b> Type <kbd>start.</kbd> A menu appears:</p>
 <pre>What would you like to do?
   1. Identify a stone  - "I don't know what it is"      (forward chaining)
   2. Check a claim     - "The seller says it's a ruby"   (backward chaining)
@@ -278,9 +319,9 @@ The system replies <span class="code">Web interface running: open http://localho
   4. Ask in English    - e.g. is it a ruby if the RI is 1.765 and it is red
   5. Run the demo      - natural blue sapphire example
   6. Quit
-Choose 1-6:</pre></li>
-<li>Type a number and press Enter (no full stop is needed inside the menu). Answer each question by typing a number or a value; press Enter on its own if you do not know.</li>
-<li>In step-by-step mode, type <kbd>why</kbd> at any question to see why it is being asked:
+Choose 1-6:</pre>
+<p><b>Step 3.</b> Type a number and press Enter (no full stop is needed inside the menu). Answer each question by typing a number or a value; press Enter on its own if you do not know. For the RI, type <kbd>OTL</kbd> if the refractometer shows no reading (over the limit).</p>
+<p><b>Step 4.</b> In step-by-step mode, type <kbd>why</kbd> at any question to see why it is being asked:</p>
 <pre>What is the optic character?
     0. Don't know
     1. Isotropic
@@ -290,22 +331,18 @@ Choose 1-6:</pre></li>
 WHY I AM ASKING:
   - I am trying to find out: is it Corundum?  Rule r1 says: IF Optic: Uniaxial AND RI in
     Corundum range AND SG in Corundum range THEN Species: Corundum.
-  - To test rule r1 I need to know: the optic character.</pre></li>
-<li>After each result you can type <kbd>y</kbd> to see the technical trace.</li>
-<li>Choose <b>6</b> to leave the menu, then type <kbd>halt.</kbd></li>
-</ol>
+  - To test rule r1 I need to know: the optic character.</pre>
+<p><b>Step 5.</b> After each result you can type <kbd>y</kbd> to see the technical trace.</p>
+<p><b>Step 6.</b> Choose <b>6</b> to leave the menu, then type <kbd>halt.</kbd></p>
 <p>The command <kbd>demo.</kbd> runs the worked blue sapphire example directly.</p>
 
-<h1>14. Running the automated tests</h1>
-<ol>
-<li>Start SWI-Prolog with <kbd>swipl main.pl</kbd>.</li>
-<li>Type <kbd>run_tests.</kbd></li>
-<li>The last line should read:
-<pre>% All 41 tests passed</pre></li>
-</ol>
+<h1>17. Running the automated tests</h1>
+<p><b>Step 1.</b> Start SWI-Prolog with <kbd>swipl main.pl</kbd>.</p>
+<p><b>Step 2.</b> Type <kbd>run_tests.</kbd> The last line should read:</p>
+<pre>% All 47 tests passed</pre>
 <p>The rule base can also be exported to a spreadsheet file with <kbd>export_rules_csv('rules_table.csv').</kbd></p>
 
-<h1>15. Quick reference</h1>
+<h1>18. Quick reference</h1>
 <p class="tcaption">Table 5. Commands</p>
 <table class="data">
 <tr><th style="width:36%">Command (type at the ?- prompt)</th><th>Effect</th></tr>
@@ -314,7 +351,7 @@ WHY I AM ASKING:
 <tr><td class="code">stop_server(8080).</td><td>Stop the web interface.</td></tr>
 <tr><td class="code">start.</td><td>Start the console interface.</td></tr>
 <tr><td class="code">demo.</td><td>Run the worked blue sapphire example.</td></tr>
-<tr><td class="code">run_tests.</td><td>Run the 41 automated tests.</td></tr>
+<tr><td class="code">run_tests.</td><td>Run the 47 automated tests.</td></tr>
 <tr><td class="code">make.</td><td>Reload program files after editing them.</td></tr>
 <tr><td class="code">halt.</td><td>Leave SWI-Prolog.</td></tr>
 </table>
