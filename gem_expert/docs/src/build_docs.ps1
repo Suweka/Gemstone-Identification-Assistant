@@ -18,9 +18,9 @@ $frag = @{
     '{{t_rules}}'   = [IO.File]::ReadAllText((Join-Path $Data 't_rules.html'))
     '{{t_facts}}'   = [IO.File]::ReadAllText((Join-Path $Data 't_facts.html'))
     '{{t_cf}}'      = [IO.File]::ReadAllText((Join-Path $Data 't_cf.html'))
+    '{{t_gemfacts}}' = [IO.File]::ReadAllText((Join-Path $Data 't_gemfacts.html'))
     '{{tests_out}}' = HtmlEscape ([IO.File]::ReadAllText((Join-Path $Data 'tests_out.txt')).Trim())
     '{{console}}'   = HtmlEscape ([IO.File]::ReadAllText((Join-Path $Data 'console_consult.txt')).Trim())
-    '{{IMG}}'       = $imgUrl
 }
 
 $word = New-Object -ComObject Word.Application
@@ -31,6 +31,7 @@ try {
                         @('manual.html', 'Gemstone_Identification_Assistant_User_Manual'))) {
         $html = [IO.File]::ReadAllText((Join-Path $src $pair[0]))
         foreach ($k in $frag.Keys) { $html = $html.Replace($k, $frag[$k]) }
+        $html = $html.Replace('{{IMG}}', $imgUrl)          # last: fragments contain it too
         # give every picture an explicit height so Word keeps its aspect ratio (max 820 px tall)
         Add-Type -AssemblyName System.Drawing
         $html = [regex]::Replace($html, '<img src="([^"]+)" width="([0-9]+)">', [System.Text.RegularExpressions.MatchEvaluator]{

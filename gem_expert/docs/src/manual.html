@@ -17,6 +17,10 @@ pre{font-family:Consolas,monospace;font-size:9pt;background:#f4f5f7;border:1px s
 .tip{border-left:4px solid #2f5496;background:#eef3fb;padding:5px 8px;margin-bottom:6pt}
 .warn{border-left:4px solid #c55a11;background:#fbeee6;padding:5px 8px;margin-bottom:6pt}
 .note{background:#ffff00}
+table.gemt{border-collapse:collapse;width:100%;margin-bottom:6pt}
+table.gemt td,table.gemt th{border:1px solid #9aa4b5;padding:3px 4px;font-size:8.5pt;vertical-align:middle;text-align:left}
+table.gemt th{background:#dbe5f1;font-weight:bold}
+.small{font-size:7.5pt;color:#444}
 .title{text-align:center}
 ol,ul{margin-top:0;margin-bottom:6pt}
 li{margin-bottom:3pt}
@@ -240,6 +244,7 @@ The system replies <span class="code">Web interface running: open http://localho
 <p>The <b>Example stones to try</b> section of the home page has 15 ready-made stones (Figure 11). Press <b>Try it</b> on any card to copy its readings into the form, then press <b>Identify stone</b> or <b>Verify</b>.</p>
 <p class="fig"><img src="{{IMG}}/home_examples.png" width="540"></p>
 <p class="caption">Figure 11. Example stones</p>
+<p>To test every gem in the system with your own inputs, use the readings in <b>Appendix A</b>: each gem's facts, a sample reading to type, and the result the system gives.</p>
 
 <h2>11.1 Example 1: a natural blue sapphire</h2>
 <table class="data">
@@ -363,5 +368,19 @@ WHY I AM ASKING:
 <tr><td class="code">http://localhost:8080/consult</td><td>Step-by-step consultation</td></tr>
 <tr><td class="code">http://localhost:8080/rules</td><td>Knowledge base: gem facts and all rules</td></tr>
 </table>
+
+<br clear="all" style="page-break-before:always">
+<h1>Appendix A. Gem property facts for testing</h1>
+<p>This table lists the facts the system holds for every material in its knowledge base, so the system can be tested with any gem. For each one:</p>
+<ul>
+<li><b>RI</b> and <b>SG</b> are the reading ranges the rules use. The system also accepts readings slightly outside them (RI &#177;0.005, SG &#177;0.03) to allow for measurement error, but with lower certainty.</li>
+<li><b>Try this reading</b> is a sample input from the middle of the ranges. Enter it in the form (Section 6) and press <b>Identify stone</b>. For "RI over the limit", tick <b>Over the limit (no reading)</b> instead of typing an RI.</li>
+<li><b>System result</b> is what the system concludes for that reading, with its certainty. These results were produced by running the system on each sample.</li>
+<li><b>Source</b> is the reference the values were taken from (full references are in the project report).</li>
+</ul>
+<p>Adding a <b>colour</b> from the list names the variety (for example corundum + red gives <i>Ruby</i>, chrysoberyl + colour change gives <i>Alexandrite</i>), and adding an <b>inclusion</b> lets the system judge whether the stone is natural or synthetic. Trying values <i>outside</i> the ranges, or a different optic character, shows how the system rejects a gem and explains why.</p>
+<p class="tcaption">Table A1. Gem property facts, sample readings and results</p>
+{{t_gemfacts}}
+<div class="warn">These values are for testing the system. Real stones vary; always rely on a certificate from the NGJA or an accredited laboratory for a purchase.</div>
 
 </body></html>

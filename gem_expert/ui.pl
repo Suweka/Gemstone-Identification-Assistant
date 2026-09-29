@@ -981,9 +981,9 @@ rules_page(_Request) :-
 facts_table -->
     { findall(tr([ td(class(kbpic), div(class(pic), Pic)),
                    td([b(L), div(class(swatches), Dots)]),
-                   td(R), td(S), td(OP), td(H) ]),
+                   td(R), td(S), td(OP), td(H), td(class(src), Src) ]),
               ( ( gem(G) ; imitation_material(G) ), label(G, L),
-                picture_or_unknown(G, Pic), colour_dots(G, Dots),
+                picture_or_unknown(G, Pic), colour_dots(G, Dots), material_source(G, Src),
                 ri_range(G, R1, R2), format(atom(R), '~3f - ~3f', [R1, R2]),
                 sg_range(G, S1, S2), format(atom(S), '~2f - ~2f', [S1, S2]),
                 optic(G, O), label(O, OP), hardness(G, H) ),
@@ -993,8 +993,24 @@ facts_table -->
                p(class(muted), 'Each drawing shows the gem in a typical colour; the dots show every colour the species occurs in (colour/2 facts).'),
                div(class('table-wrap'),
                  table(class(kb),
-                   [ tr([th(''), th('Material and colours'), th('Refractive index'), th('Specific gravity'), th('Optic character'), th('Hardness')]) | Rows ]))
+                   [ tr([th(''), th('Material and colours'), th('Refractive index'), th('Specific gravity'), th('Optic character'), th('Hardness'), th('Source')]) | Rows ]))
              ])).
+
+% the literature source of a material's facts: the source of the rule
+% that identifies it
+material_source(G, Name) :-
+    ( rule(Id, _, species(G)) ; rule(Id, _, imitation(G)) ),
+    rule_info(Id, _, K), !,
+    ( short_source(K, Name) -> true ; Name = K ).
+material_source(_, '').
+
+short_source(gia,     'GIA Gem Encyclopedia').
+short_source(webster, 'Webster, Gems').
+short_source(read,    'Read, Gemmology').
+short_source(gemdat,  'Gemdat.org').
+short_source(igs,     'International Gem Society').
+short_source(matlins, 'Matlins & Bonanno').
+short_source(ngja,    'NGJA').
 
 % small colour dots for every colour a material occurs in
 colour_dots(G, Dots) :-
