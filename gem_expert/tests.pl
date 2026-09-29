@@ -201,6 +201,10 @@ test(tc30_proof_certainty) :-
     verify([ri(1.765), sg(4.00), optic(uniaxial), observed_colour(red)], ruby, proved(_, Proof)),
     proof_cf(Proof, CF), percent(CF, 90).
 
+test(tc42_certainty_words) :-
+    cf_word(90, "very likely"), cf_word(63, "likely"), cf_word(52, "possible"),
+    cf_word(25, "weak evidence"), cf_word(5, "very weak evidence").
+
 :- end_tests(certainty_factors).
 
 :- begin_tests(consultation_why).

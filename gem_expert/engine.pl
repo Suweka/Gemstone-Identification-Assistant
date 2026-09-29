@@ -225,6 +225,20 @@ cond_cf_test(_, 1.0).
 
 percent(CF, P) :- P is round(CF * 100).
 
+% cf_word(+Percent, -Words): what a certainty percentage means in plain words
+cf_word(P, "very likely")        :- P >= 80, !.
+cf_word(P, "likely")             :- P >= 60, !.
+cf_word(P, "possible")           :- P >= 40, !.
+cf_word(P, "weak evidence")      :- P >= 20, !.
+cf_word(_, "very weak evidence").
+
+% the scale shown to users
+cf_scale([ "80-100%"-"Very likely: the evidence strongly supports it.",
+           "60-79%"-"Likely: good evidence, with some doubt.",
+           "40-59%"-"Possible: some evidence; take more measurements.",
+           "20-39%"-"Weak evidence: treat it as a first guess only.",
+           "below 20%"-"Very weak: not enough evidence to go on." ]).
+
 /* ==================================================================
    MODE C - CONSULTATION (interactive backward chaining)
    The engine asks for an input only when a rule it is testing needs it.

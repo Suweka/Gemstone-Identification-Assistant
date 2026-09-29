@@ -460,13 +460,25 @@ level_tone(1, neutral).
 
 % certainty meter: a bar filled to the certainty factor
 meter(CF) -->
-    { percent(CF, P),
+    { percent(CF, P), cf_word(P, Word),
       format(atom(W), 'width:~w%', [P]),
       format(atom(PT), '~w%', [P]) },
-    html(div(class(meter),
-             [ span(class(mlabel), 'Certainty'),
-               span(class(cfbar), span([class(cffill), style(W)], '')),
-               b(PT) ])).
+    html(div(class('meter-wrap'),
+             [ div(class(meter),
+                   [ span(class(mlabel), 'Certainty'),
+                     span(class(cfbar), span([class(cffill), style(W)], '')),
+                     b(PT),
+                     span(class(cfword), ['(', Word, ')']) ]),
+               \cf_help ])).
+
+% "What does this mean?" - the certainty scale in plain words
+cf_help -->
+    { cf_scale(Scale),
+      findall(li([b(R), ' ', T]), member(R-T, Scale), Items) },
+    html(details(class(cfhelp),
+                 [ summary('What does this percentage mean?'),
+                   ul(Items),
+                   p('It is a certainty factor: how strongly the expert rules believe the conclusion, based on the evidence you gave. It is not a statistical probability.') ])).
 
 % Close calls and partial matches: a ranked list with certainty and evidence
 alternatives(ambiguous(Gs)) --> !, alternatives_list(ambiguous(Gs), 'The species overlap here',
@@ -488,13 +500,13 @@ alternatives_list(Kind, Title, Intro, Gs) -->
                   [ span(class(rnum), N),
                     div(class(pic), P),
                     div(class(rbody),
-                        [ div(class(rtop), [ h4(L), b(class(rpct), PT) ]),
+                        [ div(class(rtop), [ h4(L), span(class(rpctw), [b(class(rpct), PT), span(class(rword), Word)]) ]),
                           span(class(cfbar), span([class(cffill), style(W)], '')),
                           p(class(ranges), R),
                           ul(class(evidence), EItems) ]) ]),
               ( nth1(N, Gs, G), label(G, L), picture_or_unknown(G, P), range_text(G, R),
                 ( Kind = candidates(_) -> T = candidate(G) ; T = species(G) ),
-                fact_cf(T, CF), percent(CF, Pc),
+                fact_cf(T, CF), percent(CF, Pc), cf_word(Pc, Word),
                 format(atom(W), 'width:~w%', [Pc]), format(atom(PT), '~w%', [Pc]),
                 evidence_for(Kind, G, Ev), findall(li(E), member(E, Ev), EItems) ),
               Cards) },
@@ -1445,6 +1457,13 @@ legend .num{margin:0;width:28px;height:28px;font-size:.9rem}
 
 /* certainty, ranked candidates */
 .meter b{color:var(--ink);font-size:.9rem}
+.cfword{color:var(--muted);font-size:.85rem}
+.cfhelp{margin-top:6px;font-size:.84rem;color:var(--muted)}
+.cfhelp summary{cursor:pointer;color:var(--primary);font-weight:600;display:inline}
+.cfhelp ul{margin:6px 0 4px;padding-left:18px}
+.cfhelp p{margin:4px 0 0}
+.rpctw{display:flex;flex-direction:column;align-items:flex-end;line-height:1.1}
+.rword{font-size:.78rem;color:var(--muted)}
 .cfbar{display:inline-block;position:relative;width:180px;height:9px;border-radius:5px;background:#e2e5ee;overflow:hidden;vertical-align:middle}
 .cffill{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:linear-gradient(90deg,#4338ca,#7c3aed)}
 .cftag{font-size:.74rem;font-weight:600;color:#15803d;background:#e7f6ec;border-radius:4px;padding:1px 6px}
