@@ -174,6 +174,7 @@ identify_form(Vals) -->
         [ h2(class(center), 'Describe your stone'),
           p(class('center sub'),
             'Every field is optional. The more you fill in, the more confident the answer.'),
+          \recent_section,
           form([class('gem-form live-form'), action('/identify'), method(get)],
             [ fieldset(
                 [ legend([span(class(num), '1'), 'Instrument readings']),
@@ -521,6 +522,8 @@ show_identification(Inputs, Note) :-
         identify_explanation(Tech),
         forward_diagram(DSvg, DCaps),
         edit_link(Inputs, '', EditHref),
+        percent(MainCF, MP), cf_word(MP, MW),
+        format(atom(RecentDetail), 'Identify: ~w% (~w)', [MP, MW]),
         page('Your result',
              [ \page_head('Identify mode', 'forward chaining',
                           'Your result', 'Here is what the expert system concluded from your data.'),
@@ -538,6 +541,7 @@ show_identification(Inputs, Note) :-
                    \technical_block(Tech),
                    \result_actions(EditHref)
                  ]),
+               \remember_entry(Title, RecentDetail),
                \diagram_script
              ]).
 
@@ -781,6 +785,8 @@ show_verification(Inputs, Target, Note) :-
     edit_link(Inputs, Target, EditHref),
     identify_link(Inputs, IdHref),
     format(atom(Q), 'Is my stone a ~w?', [TL]),
+    ( Result = proved(_, _) -> YN = 'Yes' ; YN = 'No' ),
+    format(atom(RecentTitle), '~w? ~w', [TL, YN]),
     page('Verification result',
          [ \page_head('Verify mode', 'backward chaining', Q,
                       'The system worked backwards from your question and checked every condition.'),
@@ -794,8 +800,45 @@ show_verification(Inputs, Target, Note) :-
                \technical_block(Tech),
                \result_actions(EditHref)
              ]),
+           \remember_entry(RecentTitle, 'Verify a claim'),
            \diagram_script
          ]).
+
+/* ---- Recent stones (kept in the browser's localStorage only) ------ */
+% on a result page: save this result to the browser's recent list
+remember_entry(Title, Detail) -->
+    html([ div([id('recent-entry'), hidden(hidden), 'data-title'(Title), 'data-detail'(Detail)], ''),
+           script(\[
+'(function(){try{',
+'  var e=document.getElementById("recent-entry"), k="gemid.recent";',
+'  var list=JSON.parse(localStorage.getItem(k)||"[]"), u=location.pathname+location.search;',
+'  list=list.filter(function(x){return x.u!==u;});',
+'  list.unshift({t:e.getAttribute("data-title"),d:e.getAttribute("data-detail"),u:u,at:Date.now()});',
+'  localStorage.setItem(k,JSON.stringify(list.slice(0,8)));',
+'}catch(err){}})();'
+           ]) ]).
+
+% on the home page: list the recent results (hidden when there are none)
+recent_section -->
+    html([ div([id(recent), class(recent), hidden(hidden)],
+               [ div(class('recent-head'),
+                     [ h3('Your recent stones'),
+                       button([type(button), id('recent-clear'), class('btn btn-ghost')], 'Clear list') ]),
+                 p(class(muted), 'Saved only in this browser. Click one to see its result again.'),
+                 ul(id('recent-list'), '') ]),
+           script(\[
+'(function(){try{',
+'  var k="gemid.recent", list=JSON.parse(localStorage.getItem(k)||"[]");',
+'  var box=document.getElementById("recent"), ul=document.getElementById("recent-list");',
+'  if(!box||!list.length)return;',
+'  list.forEach(function(x){var li=document.createElement("li"),a=document.createElement("a"),s=document.createElement("span");',
+'    a.href=x.u; a.textContent=x.t; s.textContent=x.d+" - "+new Date(x.at).toLocaleString();',
+'    li.appendChild(a); li.appendChild(s); ul.appendChild(li);});',
+'  box.hidden=false;',
+'  document.getElementById("recent-clear").addEventListener("click",function(){',
+'    try{localStorage.removeItem(k);}catch(e){} box.hidden=true;});',
+'}catch(err){}})();'
+           ]) ]).
 
 /* ==================================================================
    REASONING DIAGRAM BLOCK (see diagrams.pl)
@@ -1213,6 +1256,8 @@ consult_result_page(Goal, Inputs, Unknowns, Order, Result) :-
     back_href(Goal, Inputs, Unknowns, Order, BackHref),
     (   BackHref == '' -> Back = []
     ;   Back = [a([class('btn btn-secondary'), href(BackHref)], [\['&#8592;'], ' Change my last answer'])] ),
+    ( Result = proved(_, _) -> YN = 'Yes' ; YN = 'No' ),
+    format(atom(CTitle), '~w? ~w', [TL, YN]),
     append([ [a([class('btn btn-primary'), href(Restart)], 'Start again')],
              Back,
              [ \print_button,
@@ -1232,6 +1277,7 @@ consult_result_page(Goal, Inputs, Unknowns, Order, Result) :-
                    Actions)
              ]),
            \print_support,
+           \remember_entry(CTitle, 'Step by step'),
            \diagram_script
          ]).
 
@@ -1752,6 +1798,16 @@ legend .num{margin:0;width:28px;height:28px;font-size:.9rem}
 .cfbar{display:inline-block;position:relative;width:180px;height:9px;border-radius:5px;background:#e2e5ee;overflow:hidden;vertical-align:middle}
 .cffill{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:linear-gradient(90deg,#4338ca,#7c3aed)}
 .cftag{font-size:.74rem;font-weight:600;color:#15803d;background:#e7f6ec;border-radius:4px;padding:1px 6px}
+[hidden]{display:none!important}
+.recent{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin:0 0 18px}
+.recent-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.recent-head h3{margin:0;font-size:1.05rem}
+.recent .muted{margin:2px 0 8px;font-size:.85rem}
+#recent-list{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+#recent-list li{border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:#fafbff}
+#recent-list a{display:block;font-weight:600;text-decoration:none}
+#recent-list a:hover{text-decoration:underline}
+#recent-list span{font-size:.78rem;color:var(--muted)}
 .rank-list{display:flex;flex-direction:column;gap:12px}
 .next-step{display:flex;gap:12px;align-items:flex-start;background:#fdf6e9;border:1px solid #f3dcae;border-left:5px solid var(--accent);border-radius:10px;padding:12px 16px;margin:0 0 14px}
 .next-step .icon{font-size:1.3rem;line-height:1.2}
