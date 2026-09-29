@@ -71,6 +71,15 @@ try {
         $sec = $doc.Sections.Item(1)
         $sec.PageSetup.DifferentFirstPageHeaderFooter = -1
         [void]$sec.Footers.Item(1).PageNumbers.Add(1, $false)   # centre, not on first page
+        $ft = $sec.Footers.Item(1).Range.Font
+        $ft.Name = 'Times New Roman'; $ft.Size = 12; $ft.Color = -16777216
+        # headings: Times New Roman, black (Word's heading styles are blue by default)
+        foreach ($st in -2, -3, -4) {
+            $doc.Styles.Item($st).Font.Name = 'Times New Roman'
+            $doc.Styles.Item($st).Font.Color = -16777216
+        }
+        # hyperlinks black too
+        $doc.Styles.Item(-86).Font.Color = -16777216
 
         Step "page numbers added"
         # table of contents at the [[TOC]] marker
@@ -80,8 +89,10 @@ try {
             $rng.Text = ''
             [void]$doc.TablesOfContents.Add($rng, $true, 1, 2)
             foreach ($st in -20, -21, -22) {                # built-in styles TOC 1-3
-                $doc.Styles.Item($st).Font.Name = 'Calibri'
-                $doc.Styles.Item($st).Font.Size = 11
+                $doc.Styles.Item($st).Font.Name = 'Times New Roman'
+                $doc.Styles.Item($st).Font.Size = 12
+                $doc.Styles.Item($st).Font.Color = -16777216 # automatic (black)
+                $doc.Styles.Item($st).ParagraphFormat.LineSpacingRule = 1   # 1.5 lines
             }
             $doc.TablesOfContents.Item(1).Update()
         }
