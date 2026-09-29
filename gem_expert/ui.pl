@@ -181,7 +181,7 @@ identify_form(Vals) -->
                     [ \field(ri, RI), \field(sg, SG), \field(optic, Optic) ]) ]),
               fieldset(
                 [ legend([span(class(num), '2'), 'What you can see']),
-                  div(class('field-grid'),
+                  div(class('field-grid one'),
                     [ \field(colour, Col), \field(phenomenon, Ph), \field(inclusion, Inc) ]) ]),
               div(class(actions),
                 [ div(class('action-card'),
@@ -246,20 +246,116 @@ field(optic, V) -->
                  'Whether light passes through as one ray or is split in two.',
                  'Turn the stone between crossed filters in a polariscope.').
 field(colour, V) -->
-    { findall(C-C, colour(_, C), Cs0), sort(Cs0, Cs) },
-    select_field(colour, 'Colour', V, Cs,
-                 'The main body colour of the stone.',
-                 'Look at it in daylight against a white background.').
+    { colour_order(Order),                          % colour-wheel order, not alphabetical
+      findall(opt(C, L, span([class(swatch), style(St)], ''), L),
+              ( member(C, Order), once(colour(_, C)), label(C, L), swatch_style(C, St) ),
+              Opts) },
+    picture_field(colour, 'Colour', V, Opts,
+                  'The main body colour of the stone. Pick the closest swatch.',
+                  'Look at it in daylight against a white background.').
 field(phenomenon, V) -->
-    { phenomenon_options(Os) },
-    select_field(phenomenon, 'Optical effect', V, Os,
-                 'Special light effects such as a star or a cat''s-eye.',
-                 'Look under a single light source and rotate the stone.').
+    { phenomenon_options(Os),
+      findall(opt(P, Short, \[Svg], Long),
+              ( member(P-Long, Os), effect_short(P, Short), effect_svg(P, Long, Svg) ),
+              Opts) },
+    picture_field(phenomenon, 'Optical effect', V, Opts,
+                  'Special light effects. Pick the picture that looks like your stone.',
+                  'Look under a single light source and rotate the stone.').
 field(inclusion, V) -->
-    { findall(I-L, inclusion_type(I, L), Os) },
-    select_field(inclusion, 'Inclusions', V, Os,
-                 'Tiny features inside the stone that reveal how it formed.',
-                 'Examine it with a 10x jeweller''s loupe.').
+    { findall(opt(I, Short, \[Svg], Long),
+              ( inclusion_type(I, Long), inclusion_short(I, Short), inclusion_svg(I, Svg) ),
+              Opts) },
+    picture_field(inclusion, 'Inclusions', V, Opts,
+                  'Tiny features inside the stone that reveal how it formed. Pick the sketch closest to what you see.',
+                  'Examine it with a 10x jeweller''s loupe.').
+
+% picture_field: a group of picture tiles that work as radio buttons.
+% The first tile ("Not checked") sends an empty value, i.e. unknown.
+picture_field(Name, Label, Value, Opts, What, Where) -->
+    { format(atom(LId), '~w-label', [Name]),
+      unknown_svg(QSvg),
+      All = [opt('', 'Not checked', \[QSvg], 'Unknown / not checked') | Opts],
+      findall(label([class(opt), title(Tip)],
+                    [ input(Attrs),
+                      span(class(tile), [ span(class(vis), Vis), span(class(tl), Text) ]) ]),
+              ( member(opt(V0, Text, Vis, Tip), All),
+                (   V0 == Value
+                ->  Attrs = [type(radio), name(Name), value(V0), checked(checked)]
+                ;   Attrs = [type(radio), name(Name), value(V0)] ) ),
+              Tiles) },
+    html(div(class('field pics'),
+             [ span([class(flabel), id(LId)], Label),
+               p(class(what), What),
+               div([class(choices), role(radiogroup), 'aria-labelledby'(LId)], Tiles),
+               p(class(where), [span(class(tag), 'How'), Where]) ])).
+
+swatch_style(colourless, 'background:repeating-conic-gradient(#dde1ea 0 25%,#fff 0 50%) 50%/10px 10px') :- !.
+swatch_style(C, S) :- swatch_colour(C, Hex), format(atom(S), 'background:~w', [Hex]).
+
+colour_order([red, pink, orange, yellow, green, blue, purple, brown, black, white, colourless]).
+
+swatch_colour(red,    '#c8102e').
+swatch_colour(pink,   '#f29cbf').
+swatch_colour(orange, '#f28c28').
+swatch_colour(yellow, '#f5d33b').
+swatch_colour(green,  '#2e9e5b').
+swatch_colour(blue,   '#1f4fbf').
+swatch_colour(purple, '#7b3fb5').
+swatch_colour(brown,  '#8b5a2b').
+swatch_colour(black,  '#1f1f1f').
+swatch_colour(white,  '#ffffff').
+
+effect_short(none,          'None').
+effect_short(star,          'Star').
+effect_short(cats_eye,      'Cat''s-eye').
+effect_short(colour_change, 'Colour change').
+effect_short(adularescence, 'Moonstone glow').
+
+% small stone drawings for the optical effects (reuses the gem pictures)
+effect_svg(P, Label, Svg) :-
+    effect_shape(P, Shape), atom_concat(fx_, P, Key),
+    gem_svg(Key, Label, Shape, Svg).
+
+effect_shape(none,          faceted('#eef1f7', '#8a93a8')).
+effect_shape(star,          cabochon('#7fa4ff', '#0f2a7a', star)).
+effect_shape(cats_eye,      cabochon('#f2d46b', '#8a6a07', cats_eye)).
+effect_shape(colour_change, split('#2f9e6e', '#b0305f')).
+effect_shape(adularescence, cabochon('#ffffff', '#9aa6bd', glow)).
+
+inclusion_short(none,              'Clean').
+inclusion_short(silk,              'Silk').
+inclusion_short(crystals,          'Crystals').
+inclusion_short(fingerprints,      'Fingerprints').
+inclusion_short(gas_bubbles,       'Gas bubbles').
+inclusion_short(curved_lines,      'Curved lines').
+inclusion_short(swirl_marks,       'Swirl marks').
+inclusion_short(discoid_fractures, 'Discoid fractures').
+
+% sketches of what each inclusion looks like under a 10x loupe
+inclusion_svg(I, Svg) :-
+    inclusion_marks(I, Marks),
+    format(atom(Svg),
+      '<svg class="incl" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="20" fill="#eef2ff" stroke="#9aa3c0" stroke-width="1.5"/>~w</svg>',
+      [Marks]).
+
+inclusion_marks(none,
+  '<path d="M12 14 l3 -3 M11 20 l6 -6" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>').
+inclusion_marks(silk,
+  '<g stroke="#6b7280" stroke-width=".8"><line x1="8" y1="16" x2="30" y2="10"/><line x1="10" y1="22" x2="34" y2="16"/><line x1="12" y1="28" x2="36" y2="22"/><line x1="14" y1="34" x2="30" y2="30"/><line x1="16" y1="8" x2="28" y2="34"/><line x1="22" y1="7" x2="33" y2="31"/></g>').
+inclusion_marks(crystals,
+  '<g fill="#4b5563"><polygon points="13,16 18,14 20,19 15,21"/><polygon points="26,24 31,22 33,27 29,30 25,28"/><rect x="18" y="29" width="4" height="3" transform="rotate(20 20 30)"/></g>').
+inclusion_marks(fingerprints,
+  '<g fill="none" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="1 2"><path d="M8 18 q7 -6 14 0 t14 0"/><path d="M8 24 q7 -6 14 0 t14 0"/><path d="M10 30 q6 -5 12 0 t12 0"/></g>').
+inclusion_marks(gas_bubbles,
+  '<g fill="#fff" stroke="#6b7280" stroke-width="1"><circle cx="15" cy="17" r="4"/><circle cx="27" cy="14" r="2.5"/><circle cx="24" cy="28" r="3.5"/><circle cx="13" cy="29" r="2"/><circle cx="31" cy="24" r="1.8"/></g>').
+inclusion_marks(curved_lines,
+  '<g fill="none" stroke="#6b7280" stroke-width="1"><path d="M6 30 a22 22 0 0 1 32 -14"/><path d="M8 35 a24 24 0 0 1 32 -13"/><path d="M5 25 a20 20 0 0 1 29 -14"/></g>').
+inclusion_marks(swirl_marks,
+  '<g fill="none" stroke="#6b7280" stroke-width="1.2"><path d="M8 26 c6 -12 14 4 20 -6 s8 -2 8 4"/><path d="M9 32 c6 -8 12 2 18 -4"/></g>').
+inclusion_marks(discoid_fractures,
+  '<ellipse cx="22" cy="22" rx="11" ry="7" fill="#dbe4ff" stroke="#8a93a8" stroke-width="1"/><polygon points="20,20 24,19 25,23 21,24" fill="#374151"/>').
+
+unknown_svg('<svg class="incl" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="20" fill="#f3f4f7" stroke="#b6bdcc" stroke-width="1.5" stroke-dasharray="3 3"/><text x="22" y="28" text-anchor="middle" font-size="17" font-weight="700" fill="#8a93a8" font-family="Inter,Arial,sans-serif">?</text></svg>').
 
 number_field(Name, Label, Value, Min, Max, Ph, What, Where) -->
     html(div(class(field),
@@ -1244,8 +1340,9 @@ page_script -->
 '    var otl=document.getElementById("ri_otl");',
 '    if(otl){otl.checked=(d.ri==="over_limit"); if(otl.checked){d.ri="";}}',
 '    ["ri","sg","optic","colour","phenomenon","inclusion","target"].forEach(function(k){',
-'      var el=document.querySelector("[name="+k+"]");',
-'      if(el){el.value=d[k]||""; el.dispatchEvent(new Event("input"));}});',
+'      var els=document.querySelectorAll("[name="+k+"]"); if(!els.length)return;',
+'      if(els[0].type==="radio"){els.forEach(function(r){r.checked=(r.value===(d[k]||""));});}',
+'      else{els[0].value=d[k]||""; els[0].dispatchEvent(new Event("input"));}});',
 '    if(otl){otl.dispatchEvent(new Event("change"));}',
 '    var f=document.querySelector("#identify");',
 '    f.scrollIntoView({behavior:"smooth"});',
@@ -1290,9 +1387,9 @@ live_check_script -->
 '  if(!f.length)return show(el,"warn","No gem in the knowledge base has this "+NAME[k]+". Check the reading, or it may be another material.");',
 '  show(el,"ok","Fits: "+f.join(", ")+".");}',
 'document.querySelectorAll(".live-form").forEach(function(form){',
-'  ["ri","sg"].forEach(function(k){var el=form.querySelector("input[name="+k+"]");',
+'  ["ri","sg"].forEach(function(k){var el=form.querySelector("input[name="+k+"]:not([type=hidden])");',
 '    if(!el)return; el.addEventListener("input",function(){check(el,k);}); check(el,k);});',
-'  var otl=form.querySelector("#ri_otl"), ri=form.querySelector("input[name=ri]");',
+'  var otl=form.querySelector("#ri_otl"), ri=form.querySelector("input[name=ri]:not([type=hidden])");',
 '  if(otl&&ri){var sync=function(){ri.disabled=otl.checked;',
 '      if(otl.checked){ri.value="";var over=[];for(var g in R.ri)if(R.ri[g][1]>R.limit)over.push(g);',
 '        show(ri,"ok","Over the limit: fits "+over.join(", ")+".");}',
@@ -1408,6 +1505,20 @@ legend .num{margin:0;width:28px;height:28px;font-size:.9rem}
 .field input:focus,.field select:focus,.verify-row select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(67,56,202,.15)}
 .field .where{margin:8px 0 0;font-size:.8rem;color:var(--muted)}
 .field .otl{display:flex;align-items:center;gap:8px;margin:8px 0 0;font-size:.88rem;font-weight:500;cursor:pointer}
+.field-grid.one{grid-template-columns:1fr}
+.flabel{display:block;font-weight:700;margin-bottom:2px}
+.choices{display:flex;flex-wrap:wrap;gap:8px}
+.opt{position:relative;cursor:pointer}
+.opt input{position:absolute;opacity:0;width:1px;height:1px;margin:0}
+.tile{display:flex;flex-direction:column;align-items:center;gap:4px;width:92px;padding:8px 4px 6px;border:1.5px solid #d6dae6;border-radius:10px;background:#fff;text-align:center;transition:border-color .15s,box-shadow .15s,background .15s}
+.opt:hover .tile{border-color:#a5acd8}
+.opt input:checked + .tile{border-color:var(--primary);background:#eef0ff;box-shadow:0 0 0 3px rgba(67,56,202,.18)}
+.opt input:focus-visible + .tile{outline:3px solid var(--accent);outline-offset:2px}
+.vis{display:flex;align-items:center;justify-content:center;width:44px;height:44px}
+.vis svg{width:44px;height:44px;filter:none}
+.vis .gem-svg{width:40px;height:40px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.25))}
+.swatch{display:block;width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(0,0,0,.18);box-shadow:inset 0 -4px 8px rgba(0,0,0,.15)}
+.tl{font-size:.78rem;font-weight:600;line-height:1.2;color:var(--ink)}
 .live{margin:6px 0 0;font-size:.84rem;line-height:1.35;min-height:0}
 .live:empty{display:none}
 .live.ok{color:var(--good)}
