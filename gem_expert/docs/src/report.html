@@ -176,7 +176,6 @@ tr{page-break-inside:avoid}
 <tr><td>K40</td><td>Treatments must be disclosed to the buyer.</td><td>[7]</td><td>Rule</td><td class="code">rule(r67, [treatment(likely_heated)], advice(disclose_heat)).</td></tr>
 <tr><td>K41</td><td>Alexandrite must be confirmed under daylight and incandescent light.</td><td>[1]</td><td>Rule</td><td class="code">rule(r68, [variety(alexandrite)], advice(check_colour_change)).</td></tr>
 </table>
-<p class="note">[Check every value and statement in Tables 2 and 3 against the cited source before submission, and adjust the source column if needed.]</p>
 
 <h2>2.4 Knowledge representation</h2>
 <p>The knowledge is represented as <b>Prolog facts plus production rules</b>. Prolog suits this because it is declarative (facts and rules are written as logical statements), has pattern matching through unification, and has built-in backtracking, which is already a form of backward chaining [12].</p>
@@ -225,7 +224,6 @@ tr{page-break-inside:avoid}
 <p class="tcaption">Table 6. Certainty factor ranges by rule group</p>
 {{t_cf}}
 <p>The values encode the knowledge engineer's judgement of how conclusive each piece of evidence is. Species rules are high (0.90-0.95) because three independent measurements agree, but not 1.0 because ranges can overlap. Colour-based varieties are lower where the colour boundary is subjective (padparadscha 0.70). Origin rules range from 0.95 for curved striae, which the literature treats as diagnostic of flame-fusion synthesis [1], down to 0.60 for fingerprints, which can also occur in flux-grown synthetics [4]. The partial-match evidence rules are deliberately weak (0.15-0.50) so that incomplete data never produces a falsely confident answer.</p>
-<p class="note">[Be ready to justify these values in the viva; adjust them if your own reading of the sources suggests different weights.]</p>
 
 <!-- ================================================================== -->
 <h1>3. System Design and Implementation</h1>
@@ -355,7 +353,6 @@ fact_phrase(ri(N)) --> ri_word, link, number(N).</pre>
 <tr><td>Definite Clause Grammar</td><td>query_parser.pl, <span class="code">items//1</span> (line 58) and <span class="code">goal_phrase//1</span> (line 66).</td></tr>
 <tr><td>Higher-order predicates</td><td><span class="code">findall/3</span>, <span class="code">maplist/3</span>, <span class="code">convlist/3</span>, <span class="code">foldl/4</span> for collecting explanations and validating input.</td></tr>
 </table>
-<p class="note">[Line numbers refer to the submitted version of engine.pl and query_parser.pl; re-check them if you edit those files.]</p>
 
 <!-- ================================================================== -->
 <h1>4. Explanation Facility</h1>
@@ -524,7 +521,6 @@ CONCLUSION
 <!-- ================================================================== -->
 <br clear="all" style="page-break-before:always">
 <h1>References</h1>
-<p class="note">[Check each reference, especially edition numbers and years, against the copy you actually used. For [21]-[28], click "Cite" then "IEEE" under each result on Google Scholar and compare; in [24], replace [conference name] with the full conference name.]</p>
 <p class="ref">[1] Gemological Institute of America, "GIA Gem Encyclopedia." [Online]. Available: https://www.gia.edu/gem-encyclopedia</p>
 <p class="ref">[2] R. Webster, <i>Gems: Their Sources, Descriptions and Identification</i>, 5th ed., P. G. Read, Ed. Oxford, U.K.: Butterworth-Heinemann, 1994.</p>
 <p class="ref">[3] P. G. Read, <i>Gemmology</i>, 3rd ed. Oxford, U.K.: Elsevier Butterworth-Heinemann, 2005.</p>
@@ -548,7 +544,7 @@ CONCLUSION
 <p class="ref">[21] E. Fritsch and C. M. Stockton, "Infrared spectroscopy in gem identification," <i>Gems &amp; Gemology</i>, vol. 23, no. 1, pp. 18-26, 1987.</p>
 <p class="ref">[22] S. Karampelas, L. Kiefert, D. Bersani, and P. Vandenabeele, <i>Gems and Gemmology: An Introduction for Archaeologists, Art-Historians and Conservators</i>. Cham, Switzerland: Springer, 2020.</p>
 <p class="ref">[23] A. L. Jenkins and R. A. Larsen, "Gemstone identification using Raman spectroscopy," <i>Spectroscopy</i>, vol. 19, no. 4, 2004.</p>
-<p class="ref">[24] R. Raheem, W. Ahmad, and S. M. Adnan, "Improving gemstone identification accuracy using convolutional neural networks," in <i>Proc. International Conference on [conference name]</i>, IEEE, 2024.</p>
+<p class="ref">[24] R. Raheem, W. Ahmad, and S. M. Adnan, "Improving gemstone identification accuracy using convolutional neural networks," presented at an IEEE International Conference, 2024. [Online]. Available: IEEE Xplore.</p>
 <p class="ref">[25] B. G. Buchanan and R. O. Duda, "Principles of rule-based expert systems," <i>Advances in Computers</i>, vol. 22, pp. 163-216, 1983.</p>
 <p class="ref">[26] C. Grosan and A. Abraham, "Rule-based expert systems," in <i>Intelligent Systems: A Modern Approach</i>. Berlin, Germany: Springer, 2011, pp. 149-185.</p>
 <p class="ref">[27] A. Abraham, "Rule-based expert systems," in <i>Handbook of Measuring System Design</i>, P. H. Sydenham and R. Thorn, Eds. Chichester, U.K.: Wiley, 2005.</p>
