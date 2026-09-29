@@ -244,11 +244,18 @@ field(ri, V) -->
                       min('1.3'), max('3.0'), placeholder('e.g. 1.765')]),
                label([class(otl), title(OtlHelp)],
                      [ input(Box), span('Over the limit (no reading)') ]),
+               \range_hint(ri),
                p(class(where), [span(class(tag), 'How'), 'Read it from a gem refractometer (use the highest reading).']) ])).
 field(sg, V) -->
-    number_field(sg, 'Specific gravity (SG)', V, '1.0', '8.0', 'e.g. 4.00',
-                 'How heavy the stone is compared with the same volume of water.',
-                 'Weigh the stone in air and in water (hydrostatic balance).').
+    html(div(class(field),
+             [ label(for(sg), 'Specific gravity (SG)'),
+               p(class(what), 'How heavy the stone is compared with the same volume of water.'),
+               input([type(number), step(any), id(sg), name(sg), value(V),
+                      min('1.0'), max('8.0'), placeholder('e.g. 4.00')]),
+               \range_hint(sg),
+               p(class(where), [span(class(tag), 'How'), 'Weigh the stone in air and in water (hydrostatic balance).']) ])).
+
+
 field(optic, V) -->
     { findall(opt(O, [Short, span(class(tsub), Term)], \[Svg], Tip),
               ( optic_tile(O, Short, Term, Tip), optic_svg(O, Svg) ),
@@ -306,6 +313,36 @@ optic_marks(uniaxial,
   '<circle cx="22" cy="22" r="20" fill="#eef2ff" stroke="#9aa3c0" stroke-width="1.5"/><g fill="none" stroke="#9aa3c0" stroke-width="1"><circle cx="22" cy="22" r="6"/><circle cx="22" cy="22" r="11"/><circle cx="22" cy="22" r="16"/></g><g stroke="#1f2433" stroke-width="3.5" stroke-linecap="round"><line x1="22" y1="4" x2="22" y2="40"/><line x1="4" y1="22" x2="40" y2="22"/></g>').
 optic_marks(biaxial,
   '<circle cx="22" cy="22" r="20" fill="#eef2ff" stroke="#9aa3c0" stroke-width="1.5"/><g fill="none" stroke="#9aa3c0" stroke-width="1"><ellipse cx="13" cy="22" rx="4" ry="4"/><ellipse cx="31" cy="22" rx="4" ry="4"/><ellipse cx="22" cy="22" rx="16" ry="10"/></g><g fill="none" stroke="#1f2433" stroke-width="3.2" stroke-linecap="round"><path d="M7 9 Q16 22 7 35"/><path d="M37 9 Q28 22 37 35"/></g>').
+
+% "Normal range" line under RI and SG, worked out from the knowledge base,
+% with a link to every gem's range (opens in a new tab so the form is kept)
+range_hint(K) -->
+    { prop_range(K, gem, GLo, GHi),
+      prop_range(K, all, ALo, AHi),
+      range_fmt(K, F),
+      format(atom(T), 'gems ~@ - ~@ (with imitations ~@ - ~@). ',
+             [format(F, [GLo]), format(F, [GHi]), format(F, [ALo]), format(F, [AHi])]),
+      (   K == ri, refractometer_limit(Lim)
+      ->  format(atom(Extra), 'Most refractometers read up to about ~w.', [Lim])
+      ;   Extra = '' ) },
+    html(p(class('range-hint'),
+           [ b('Normal range: '), T, Extra, ' ',
+             a([href('/rules#gem-facts'), target('_blank'), rel(noopener)],
+               'See the range for each gem') ])).
+
+range_fmt(ri, '~3f').
+range_fmt(sg, '~2f').
+
+% lowest and highest reading over gems only, or over all materials
+prop_range(K, Which, Lo, Hi) :-
+    findall(A-B, ( material(Which, G), prop_limits(K, G, A, B) ), Ps),
+    pairs_keys_values(Ps, As, Bs), min_list(As, Lo), max_list(Bs, Hi).
+
+material(gem, G) :- gem(G).
+material(all, G) :- ( gem(G) ; imitation_material(G) ).
+
+prop_limits(ri, G, A, B) :- ri_range(G, A, B).
+prop_limits(sg, G, A, B) :- sg_range(G, A, B).
 
 % picture_field: a group of picture tiles that work as radio buttons.
 % The first tile ("Not checked") sends an empty value, i.e. unknown.
@@ -1025,7 +1062,7 @@ facts_table -->
                 sg_range(G, S1, S2), format(atom(S), '~2f - ~2f', [S1, S2]),
                 optic(G, O), label(O, OP), hardness(G, H) ),
               Rows) },
-    html(div(class(block),
+    html(div([class(block), id('gem-facts')],
              [ h3('Gem property facts'),
                p(class(muted), 'Each drawing shows the gem in a typical colour; the dots show every colour the species occurs in (colour/2 facts).'),
                div(class('table-wrap'),
@@ -1712,6 +1749,9 @@ legend .num{margin:0;width:28px;height:28px;font-size:.9rem}
 .field .otl{display:flex;align-items:center;gap:8px;margin:8px 0 0;font-size:.88rem;font-weight:500;cursor:pointer}
 .field-grid.one{grid-template-columns:1fr}
 .field-grid .field.pics{grid-column:1/-1}
+[id]{scroll-margin-top:76px}
+.range-hint{margin:8px 0 0;font-size:.8rem;color:var(--muted);line-height:1.45}
+.range-hint a{font-weight:600;white-space:nowrap}
 .field-grid.two{grid-template-columns:1fr 1fr}
 @media (max-width:640px){.field-grid.two{grid-template-columns:1fr}}
 .tsub{display:block;font-size:.7rem;font-weight:500;color:var(--muted);margin-top:1px}
